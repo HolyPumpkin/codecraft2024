@@ -55,6 +55,15 @@ struct Berth
 
 	// 装载速度
 	int loading_speed;
+
+	Berth() {}
+
+	Berth(int x, int y, int transport_time, int loading_speed) {
+		this->x = x;
+		this->y = y;
+		this->transport_time = transport_time;
+		this->loading_speed = loading_speed;
+	}
 };
 
 struct Robot
@@ -69,6 +78,14 @@ struct Robot
 	int status;
 
 	// TODO 还需定义Good结构体
+	Robot() {}
+
+	Robot(int x, int y) {
+		this->x = x;
+		this->y = y;
+		this->is_carry = 0;
+		this->status = 1;
+	}
 };
 
 struct Good
@@ -81,6 +98,8 @@ struct Good
 
 	// 价值
 	int val;
+
+	Good() {};
 
 	// 构造函数（每个物品生命周期为20）
 	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_y), ttl(20) {};

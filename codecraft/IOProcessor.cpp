@@ -22,8 +22,9 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 	//ifs.close();
 
 
-	// 读取地图
 	int map_size = map.size(), berth_size = berths.size(), boat_size = boats.size();
+
+	// 读取地图
 	string line;
 	for (int i = 0; i < map_size; i++)
 	{
@@ -56,10 +57,10 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 	fflush(stdout);
 }
 
-int IOProcessor::InputFrameData(int& frame, int& money, vector<Good>& goods, vector<Robot>& robots, vector<Boat>& boats)
+int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, vector<Robot>& robots, vector<Boat>& boats)
 {
 	// 读取帧数、钱数
-	scanf("%d%d", &frame, &money);
+	scanf("%d%d", &frame_id, &money);
 
 	// 读取新的货物信息
 	int goods_size;
@@ -86,5 +87,5 @@ int IOProcessor::InputFrameData(int& frame, int& money, vector<Good>& goods, vec
 	// 读取一行OK
 	char okk[100];
 	scanf("%s", okk);
-	return frame;
+	return frame_id;
 }
