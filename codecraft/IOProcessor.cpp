@@ -86,5 +86,5 @@ int IOProcessor::InputFrameData(int& frame, int& money, vector<Good>& goods, vec
 	// ∂¡»°“ª––OK
 	char okk[100];
 	scanf("%s", okk);
-	return 0;
+	return frame;
 }
