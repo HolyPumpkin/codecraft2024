@@ -40,8 +40,8 @@ struct Boat
 
 	// 位置（泊口ID、虚拟点-1）
 	int pos;
-	
-	// 状态
+
+	// 状态 // 0：运输中；1：装货或运输完成；2：泊外等待中
 	int status;
 };
 
@@ -64,9 +64,24 @@ struct Robot
 
 	// 是否携带物品 // 0：未携带；1：携带
 	int is_carry;
-	
+
 	// 机器人状态 // 0：恢复；1：正常
 	int status;
 
 	// TODO 还需定义Good结构体
+};
+
+struct Good
+{
+	// 坐标
+	int x, y;
+
+	// time_to_live
+	int ttl;
+
+	// 价值
+	int val;
+
+	// 构造函数（每个物品生命周期为20）
+	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_y), ttl(20) {};
 };
