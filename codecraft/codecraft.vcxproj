@@ -128,14 +128,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DetectCollision.cpp" />
-    <ClCompile Include="IOProcesson.cpp" />
+    <ClCompile Include="IOProcessor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MakeDecision.cpp" />
     <ClCompile Include="PlanPath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DetectCollision.h" />
-    <ClInclude Include="IOProcesson.h" />
+    <ClInclude Include="IOProcessor.h" />
     <ClInclude Include="MakeDecision.h" />
     <ClInclude Include="MyStruct.h" />
     <ClInclude Include="PlanPath.h" />
