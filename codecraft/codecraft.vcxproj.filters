@@ -27,7 +27,7 @@
     <ClCompile Include="DetectCollision.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="IOProcesson.cpp">
+    <ClCompile Include="IOProcessor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,10 +41,10 @@
     <ClInclude Include="DetectCollision.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="IOProcesson.h">
+    <ClInclude Include="MyStruct.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MyStruct.h">
+    <ClInclude Include="IOProcessor.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
