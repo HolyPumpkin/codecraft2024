@@ -1,42 +1,51 @@
 #include "IOProcessor.h"
 
+IOProcessor::IOProcessor(int map_size, int berth_size, int boat_size, int robot_size)
+{
+	this->map_size = map_size;
+	this->berth_size = berth_size;
+	this->boat_size = boat_size;
+	this->robot_size = robot_size;
+}
+
+int IOProcessor::ReadMapFromFile(vector<vector<char>>& map)
+{
+	ifstream ifs("map1.txt");
+	if (!ifs.is_open())
+	{
+		cerr << "Error opening the file!" << endl;
+		return - 1;
+	}
+
+	int len = this->map_size, i = 0;
+	string line;
+	while (getline(ifs, line))
+	{
+		for (int j = 0; j < len; j++)
+			map[i][j] = line[j];
+	}
+
+	ifs.close();
+	return 0;
+}
+
 void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats)
 {
-	// 读取地图文件
-	//ifstream ifs("map1.txt");
-	//if (!ifs.is_open())
-	//{
-	//	cerr << "Error opening the file!" << endl;
-	//	return;
-	//}
-
-	//string line;
-	//while (getline(ifs, line))
-	//{
-	//	vector<char> temp;
-	//	for (int i = 0; i < line.size(); i++)
-	//		temp.push_back(line[i]);
-	//	map.push_back(temp);
-	//}
-
-	//ifs.close();
-
-
-	int map_size = map.size(), berth_size = berths.size(), boat_size = boats.size();
+	// int map_size = map.size(), berth_size = berths.size(), boat_size = boats.size();
 
 	// 读取地图
 	string line;
-	for (int i = 0; i < map_size; i++)
+	for (int i = 0; i < this->map_size; i++)
 	{
 		scanf("%s", &line);
-		for (int j = 0; j < map_size; j++)
+		for (int j = 0; j < this->map_size; j++)
 		{
 			map[i][j] = line[i];
 		}
 	}
 
 	// 读取泊口
-	for (int i = 0; i < berth_size; i++)
+	for (int i = 0; i < this->berth_size; i++)
 	{
 		int berth_id;
 		scanf("%d", &berth_id);
@@ -73,13 +82,13 @@ int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, 
 	}
 
 	// 读取机器人信息
-	for (int i = 0; i < robots.size(); i++)
+	for (int i = 0; i < this->robot_size; i++)
 	{
 		scanf("%d%d%d%d", &robots[i].is_carry, &robots[i].x, &robots[i].y, &robots[i].status);
 	}
 
 	// 读取轮船信息
-	for (int i = 0; i < boats.size(); i++)
+	for (int i = 0; i < this->boat_size; i++)
 	{
 		scanf("%d%d\n", &boats[i].status, &boats[i].pos);
 	}
