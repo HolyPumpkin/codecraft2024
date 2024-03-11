@@ -18,7 +18,7 @@ public:
 
 	Point* getPoint(list<Point*>& l, Point& p);
 
-	void printPath(vector<pair<int, int>> path);
+	void printPath(vector<pair<int, int>>& path);
 
 	/* 对外部暴露的接口，路径规划主体 */
 	vector<pair<int, int>> pathplanning(Point& start, Point& end);
