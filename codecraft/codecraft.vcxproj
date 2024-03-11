@@ -132,7 +132,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MakeDecision.cpp" />
     <ClCompile Include="PlanPath.cpp" />
-    <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DetectCollision.h" />
@@ -141,7 +140,6 @@
     <ClInclude Include="MyStruct.h" />
     <ClInclude Include="PlanPath.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

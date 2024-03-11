@@ -36,13 +36,7 @@ void IOProcessor::OutputMap(vector<vector<char>>& map)
 	for (int i = 0; i < this->map_size; i++)
 	{
 		for (int j = 0; j < this->map_size; j++)
-		{
-			if (j != 0)
-			{
-				printf(" ");
-			}
 			printf("%c", map[i][j]);
-		}
 		printf("\n");
 	}
 }

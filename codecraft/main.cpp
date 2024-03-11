@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "MyStruct.h"
 #include "IOProcessor.h"
-#include "Test.h"
 
 
 /***********************************************************************/
@@ -31,10 +30,6 @@ int main()
 	iop.ReadMapFromFile("../maps/map3.txt", map);
 	iop.OutputMap(map);
 
-	Test test;
-	Point s = Point(30, 122);
-	Point e = Point(66, 56);
-	test.displayPath(map, s, e, N, n);
 
 
 	return 0;

@@ -50,7 +50,7 @@ Point* PlanPath::getPoint(list<Point*>& l, Point& p)
     return new Point(-1, -1);
 }
 
-void PlanPath::printPath(vector<pair<int, int>>& path)
+void PlanPath::printPath(vector<pair<int, int>> path)
 {
     std::cout << "Â·¾¶ÈçÏÂ£º" << endl;
     for (auto& i : path)
