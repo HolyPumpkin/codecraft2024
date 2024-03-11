@@ -1,5 +1,19 @@
 #include "PlanPath.h"
 
+/**
+ * PlanPath - 根据输入构造路径规划类实例
+ * @_map: 二维字符地图
+ * @_N: 构造地图大小
+ * @_n: 实际地图大小
+ *
+ * 接收三个参数，构造出PlanPath类实例
+ *
+ * 返回值:
+ * 无
+ *
+ * 注意事项/约束条件：
+ * 无
+ */
 PlanPath::PlanPath(vector<vector<char>>& _map, int _N, int _n)
 {
 	this->map = _map;
@@ -7,12 +21,37 @@ PlanPath::PlanPath(vector<vector<char>>& _map, int _N, int _n)
     this->n = _n;
 }
 
+/**
+ * getDis - 计算两点间距离
+ * @start: 起点结构体
+ * @end: 终点结构体
+ *
+ * 根据接收的两个点结构体，计算出它们之间的距离
+ *
+ * 返回值:
+ * 两点间的距离
+ *
+ * 注意事项/约束条件：
+ * 默认实现为曼哈顿距离
+ */
 int PlanPath::getDis(Point& start, Point& end)
 {
     //默认曼哈顿距离
     return abs(start.x - end.x) + abs(start.y - end.y);
 }
 
+/**
+ * getMinF - 根据输入的列表，查询并得到其中F值最小的点
+ * @l: 存储指向Point结构体的指针的列表
+ *
+ * 查询列表中F值最小的点，并返回
+ *
+ * 返回值:
+ * 指向Point结构体的指针
+ *
+ * 注意事项/约束条件：
+ * 无
+ */
 Point* PlanPath::getMinF(list<Point*>& l)
 {
     Point* res = l.front();
@@ -26,6 +65,19 @@ Point* PlanPath::getMinF(list<Point*>& l)
     return res;
 }
 
+/**
+ * isInlist - 根据输入判断列表中是否存在某点
+ * @l: 存储指向Point结构体的指针的列表
+ * @p: 需要查询的Point结构体
+ *
+ * 接收两个参数，判断输入的点是否在列表中
+ *
+ * 返回值:
+ * 布尔值
+ *
+ * 注意事项/约束条件：
+ * 无
+ */
 bool PlanPath::isInlist(list<Point*>& l, Point& p)
 {
     for (auto& t : l)
@@ -38,6 +90,20 @@ bool PlanPath::isInlist(list<Point*>& l, Point& p)
     return false;
 }
 
+/**
+ * getPoint - 根据输入得到列表中对应的Point结构体
+ * @l: 存储指向Point结构体的指针的列表
+ * @p: 需要操作的Point结构体
+ *
+ * 接收两个参数，得到列表中与输入点坐标一致的点
+ *
+ * 返回值:
+ * 指向Point结构体的指针
+ *
+ * 注意事项/约束条件：
+ * Point结构体中的F值可能是不一样的，所以两个坐标相同的点在路径
+ * 规划算法中不一定是同一个点，这里是始终以列表中存储的点为准
+ */
 Point* PlanPath::getPoint(list<Point*>& l, Point& p)
 {
     for (auto& i : l)
@@ -50,6 +116,18 @@ Point* PlanPath::getPoint(list<Point*>& l, Point& p)
     return new Point(-1, -1);
 }
 
+/**
+ * printPath - 根据输入将对应路径打印
+ * @path:以坐标对形式存储的数组
+ *
+ * 接收一个参数，打印出对应的路径
+ *
+ * 返回值:
+ * 无
+ *
+ * 注意事项/约束条件：
+ * 无
+ */
 void PlanPath::printPath(vector<pair<int, int>>& path)
 {
     std::cout << "路径如下：" << endl;
@@ -59,6 +137,19 @@ void PlanPath::printPath(vector<pair<int, int>>& path)
     }
 }
 
+/**
+ * pathplanning - 根据输入运行路径规划算法
+ * @start:作为起点的Point结构体
+ * @end:作为终点的Point结构体
+ *
+ * 接收两个参数起点和终点，运行路径规划算法，得到一条最短路径。
+ *
+ * 返回值:
+ * 以坐标对形式存储的数组，代表从起点到终点的路径
+ *
+ * 注意事项/约束条件：
+ * 默认实现为A star算法
+ */
 vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
 {
     //初始化

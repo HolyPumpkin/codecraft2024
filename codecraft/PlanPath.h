@@ -28,7 +28,7 @@ public:
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
-	vector<vector<char>> map;
+	vector<vector<char>> map;	//二维字符地图
 	
 };
 
