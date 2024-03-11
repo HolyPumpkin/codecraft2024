@@ -14,14 +14,16 @@ const int boat_num = 5;		// 轮船数量
 int money, frame_id;		// 钱数，帧数
 
 /***********************************************************************/
-vector<vector<char>> map(N, vector<char>(N));
-vector<Robot> robots(robot_num);
-vector<Berth> berths(berth_num);
-vector<Boat> boats(boat_num);
+vector<vector<char>> map(N, vector<char>(N));	// 地图
+vector<Robot> robots(robot_num);				// 机器人
+vector<Berth> berths(berth_num);				// 泊口
+vector<Boat> boats(boat_num);					// 轮船
+vector<Command> robot_cmd(robot_num);			// 机器人指令集
+vector<Command> boat_cmd(boat_num);				// 轮船指令集
 
 //int gds[N][N];
 
-
+/***********************************************************************/
 int main()
 {
 	IOProcessor iop;

@@ -33,6 +33,18 @@ struct Point
 	};
 };
 
+struct Command
+{
+	// 指令名称
+	string name;
+
+	// 机器人/轮船 ID
+	int id;
+
+	// 参数 2
+	int param_2;
+};
+
 struct Boat
 {
 	// 容量
