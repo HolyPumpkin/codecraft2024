@@ -89,7 +89,12 @@ struct Robot
 	// 机器人状态 // 0：恢复；1：正常
 	int status;
 
-	// TODO 还需定义Good结构体
+	// 取物路径
+	vector<pair<int, int>> fetch_good_path;
+
+	// 送物路径
+	vector<pair<int, int>> send_good_path;
+
 	Robot() {}
 
 	Robot(int x, int y) {
