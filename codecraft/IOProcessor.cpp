@@ -110,3 +110,34 @@ int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, 
 	scanf("%s", okk);
 	return frame_id;
 }
+
+void IOProcessor::OutputCommand(vector<Command>& robot_cmd, vector<Command>& boat_cmd)
+{
+	// 输出机器人指令
+	for (int i = 0; i < this->robot_size; i++)
+	{
+		string cmd_name = robot_cmd[i].name;
+		if (cmd_name.size() > 0)
+		{
+			printf("%s %d ", cmd_name, robot_cmd[i].id);
+			if (robot_cmd[i].param_2 != -1)
+				printf("%d\n", robot_cmd[i].param_2);
+		}
+	}
+
+	// 输出轮船指令
+	for (int i = 0; i < this->boat_size; i++)
+	{
+		string cmd_name = boat_cmd[i].name;
+		if (cmd_name.size() > 0)
+		{
+			printf("%s %d ", cmd_name, boat_cmd[i].id);
+			if (boat_cmd[i].param_2 != -1)
+				printf("%d\n", boat_cmd[i].param_2);
+		}
+	}
+
+	// 输出OK
+	printf("OK\n");
+	fflush(stdout);
+}

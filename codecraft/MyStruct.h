@@ -41,7 +41,7 @@ struct Command
 	// 机器人/轮船 ID
 	int id;
 
-	// 参数 2
+	// 参数 2 // -1：表示无参数
 	int param_2;
 };
 
