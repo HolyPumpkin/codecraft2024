@@ -89,6 +89,9 @@ struct Robot
 	// 机器人状态 // 0：恢复；1：正常
 	int status;
 
+	// 取物路径下标，送物路径下标
+	int fetch_good_cur, send_good_cur;
+
 	// 取物路径
 	vector<pair<int, int>> fetch_good_path;
 
