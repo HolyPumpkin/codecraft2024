@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "MyStruct.h"
+#include "IOProcessor.h"
 
 
 /***********************************************************************/
@@ -23,5 +24,8 @@ vector<Boat> boats(boat_num);
 
 int main()
 {
+	IOProcessor iop;
+	iop.ReadMapFromFile("", map);
+	iop.OutputMap(map);
 	return 0;
 }

@@ -8,13 +8,13 @@ IOProcessor::IOProcessor(int map_size, int berth_size, int boat_size, int robot_
 	this->robot_size = robot_size;
 }
 
-int IOProcessor::ReadMapFromFile(vector<vector<char>>& map)
+int IOProcessor::ReadMapFromFile(string file_path, vector<vector<char>>& map)
 {
-	ifstream ifs("map1.txt");
+	ifstream ifs(file_path);
 	if (!ifs.is_open())
 	{
 		cerr << "Error opening the file!" << endl;
-		return - 1;
+		return -1;
 	}
 
 	int len = this->map_size, i = 0;
@@ -27,6 +27,16 @@ int IOProcessor::ReadMapFromFile(vector<vector<char>>& map)
 
 	ifs.close();
 	return 0;
+}
+
+void IOProcessor::OutputMap(vector<vector<char>>& map)
+{
+	for (int i = 0; i < this->map_size; i++)
+	{
+		for (int j = 0; j < this->map_size; j++)
+			printf("%c", map[i][j]);
+		printf("\n");
+	}
 }
 
 void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats)
