@@ -125,3 +125,4 @@
   * void InputFrameData(frame_id, money, goods, robots, boats)
   * ReadMapFromFile(file_path, map)
   * OutputMap(map)
+  * OutputCommand(robot_cmd, boat_cmd)

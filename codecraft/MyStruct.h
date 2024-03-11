@@ -41,7 +41,7 @@ struct Command
 	// 机器人/轮船 ID
 	int id;
 
-	// 参数 2
+	// 参数 2 // -1：表示无参数
 	int param_2;
 };
 
@@ -89,7 +89,15 @@ struct Robot
 	// 机器人状态 // 0：恢复；1：正常
 	int status;
 
-	// TODO 还需定义Good结构体
+	// 取物路径下标，送物路径下标
+	int fetch_good_cur, send_good_cur;
+
+	// 取物路径
+	vector<pair<int, int>> fetch_good_path;
+
+	// 送物路径
+	vector<pair<int, int>> send_good_path;
+
 	Robot() {}
 
 	Robot(int x, int y) {

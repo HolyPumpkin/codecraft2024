@@ -26,6 +26,9 @@ public:
 	// 读取每一帧的输入
 	int InputFrameData(int& frame_id, int& money, vector<Good>& goods, vector<Robot>& robots, vector<Boat>& boats);
 
+	// 向判题器输出每一帧的指令
+	void OutputCommand(vector<Command>& robot_cmd, vector<Command>& boat_cmd);
+
 	~IOProcessor() {};
 };
 
