@@ -25,7 +25,10 @@ vector<Boat> boats(boat_num);
 int main()
 {
 	IOProcessor iop;
-	iop.ReadMapFromFile("", map);
+	iop.ReadMapFromFile("../maps/map3.txt", map);
 	iop.OutputMap(map);
+
+
+
 	return 0;
 }

@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "IOProcessor.h"
 
 IOProcessor::IOProcessor(int map_size, int berth_size, int boat_size, int robot_size)
@@ -23,6 +24,7 @@ int IOProcessor::ReadMapFromFile(string file_path, vector<vector<char>>& map)
 	{
 		for (int j = 0; j < len; j++)
 			map[i][j] = line[j];
+		i++;
 	}
 
 	ifs.close();
