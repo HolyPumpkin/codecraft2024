@@ -33,15 +33,29 @@ struct Point
 	};
 };
 
+struct CollisionPoint
+{
+	// 冲突点坐标
+	int x, y;
+
+	// 存储冲突对象的坐标
+	vector<pair<int, int>> obj_points;
+};
+
 struct Command
 {
 	// 指令名称
-	string name;
+	// 机器人指令
+	// // 1：move；2：get；4：pull
+	// 轮船指令
+	// // 8：ship；16：go
+	int key;
 
-	// 机器人/轮船 ID
+	// （机器人/轮船） ID
 	int id;
 
-	// 参数 2 // -1：表示无参数
+	// 参数 2 
+	// -1：表示无参数
 	int param_2;
 };
 
@@ -53,7 +67,8 @@ struct Boat
 	// 位置（泊口ID、虚拟点-1）
 	int pos;
 
-	// 状态 // 0：运输中；1：装货或运输完成；2：泊外等待中
+	// 状态
+	// 0：运输中；1：装货或运输完成；2：泊外等待中
 	int status;
 };
 
@@ -83,10 +98,12 @@ struct Robot
 	// 坐标
 	int x, y;
 
-	// 是否携带物品 // 0：未携带；1：携带
+	// 是否携带物品
+	// 0：未携带；1：携带
 	int is_carry;
 
-	// 机器人状态 // 0：恢复；1：正常
+	// 机器人状态
+	// 0：恢复；1：正常
 	int status;
 
 	// 取物路径下标，送物路径下标
