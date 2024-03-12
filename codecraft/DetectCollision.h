@@ -6,7 +6,7 @@ class DetectCollision
 private:
 
 	// 产生冲突的点集
-
+	vector<CollisionPoint> collision_points;
 
 public:
 	
@@ -16,7 +16,12 @@ public:
 	void DetectRobotInNextStep(vector<Command>& robot_commands, vector<Robot>& robots);
 
 	// 解除机器人的碰撞
-	void ClearRobotCollision();
+	// >> 机器人下一步操作的指令集
+	// >> 机器人集合，以便于后面决策
+	void ClearRobotCollision(vector<Command>& robot_commands, vector<Robot>& robots);
+
+	// 机器人路径回退
+	void RetreatRobotPath(vector<Command>& robot_commands, vector<Robot>& robots);
 
 	// 通过轮船下一步位置，检测产生冲突的点
 	// >> boat_commands, boats

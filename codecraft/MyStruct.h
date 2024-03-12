@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <map>
 #include <fstream>
 #include <string>
 using namespace std;
@@ -38,8 +39,12 @@ struct CollisionPoint
 	// 冲突点坐标
 	int x, y;
 
-	// 存储冲突对象的坐标
-	vector<pair<int, int>> obj_points;
+	// 存储冲突对象的id 和 对应指令的下标
+	vector<pair<int, int>> data;
+
+	CollisionPoint() {};
+
+	CollisionPoint(int _x, int _y, vector<pair<int, int>> _data) : x(_x), y(_y), data(_data) {};
 };
 
 struct Command
