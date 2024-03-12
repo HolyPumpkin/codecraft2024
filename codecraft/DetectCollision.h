@@ -21,7 +21,7 @@ public:
 	void ClearRobotCollision(vector<Command>& robot_commands, vector<Robot>& robots);
 
 	// 机器人路径回退
-	void RetreatRobotPath(vector<Command>& robot_commands, vector<Robot>& robots);
+	void RetreatRobotPath(Robot& robot, Command& robot_command);
 
 	// 通过轮船下一步位置，检测产生冲突的点
 	// >> boat_commands, boats

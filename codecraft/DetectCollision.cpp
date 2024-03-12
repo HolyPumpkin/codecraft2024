@@ -85,3 +85,24 @@ void DetectCollision::ClearRobotCollision(vector<Command>& robot_commands, vecto
 		}
 	}
 }
+
+void DetectCollision::RetreatRobotPath(Robot& robot, Command& robot_command)
+{
+	// 获得机器人的路径和当前下标
+	int cur;
+	vector<pair<int, int>> path;
+	if (robot.is_carry == 0)	// 机器人在取物
+	{
+		cur = robot.fetch_good_cur;
+		path = robot.fetch_good_path;
+	}
+	else if (robot.is_carry == 0) // 机器人在送物
+	{
+		cur = robot.send_good_cur;
+		path = robot.send_good_path;
+	}
+
+	// 计算回退方向
+
+	// 修改指令为回退指令
+}
