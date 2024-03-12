@@ -50,10 +50,11 @@ struct CollisionPoint
 struct Command
 {
 	// 指令名称
+	// // -1：表示空指令
 	// 机器人指令
 	// // 1：move；2：get；4：pull
 	// 轮船指令
-	// // 8：ship；16：go
+	// // 8：ship；16：go 
 	int key;
 
 	// （机器人/轮船） ID

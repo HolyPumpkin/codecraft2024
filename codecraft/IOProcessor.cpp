@@ -122,10 +122,10 @@ void IOProcessor::OutputCommand(vector<Command>& robot_cmd, vector<Command>& boa
 	// 输出机器人指令
 	for (int i = 0; i < this->robot_size; i++)
 	{
-		string cmd_name = robot_cmd[i].name;
-		if (cmd_name.size() > 0)
+		int cmd_key = robot_cmd[i].key;
+		if (cmd_key != -1)
 		{
-			printf("%s %d ", cmd_name, robot_cmd[i].id);
+			printf("%s %d ", this->key_to_name[cmd_key], robot_cmd[i].id);
 			if (robot_cmd[i].param_2 != -1)
 				printf("%d\n", robot_cmd[i].param_2);
 		}
@@ -134,10 +134,10 @@ void IOProcessor::OutputCommand(vector<Command>& robot_cmd, vector<Command>& boa
 	// 输出轮船指令
 	for (int i = 0; i < this->boat_size; i++)
 	{
-		string cmd_name = boat_cmd[i].name;
-		if (cmd_name.size() > 0)
+		int cmd_key = boat_cmd[i].key;
+		if (cmd_key != -1)
 		{
-			printf("%s %d ", cmd_name, boat_cmd[i].id);
+			printf("%s %d ", this->key_to_name[cmd_key], boat_cmd[i].id);
 			if (boat_cmd[i].param_2 != -1)
 				printf("%d\n", boat_cmd[i].param_2);
 		}

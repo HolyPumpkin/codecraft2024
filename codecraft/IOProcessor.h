@@ -8,6 +8,16 @@ private:
 	// 地图大小，泊口数量，轮船数量，机器人数量
 	int map_size, berth_size, boat_size, robot_size;
 
+	// 指令的字符串映射
+	map<int, string> key_to_name =
+	{
+		{1, "move"},
+		{2, "get"},
+		{4, "pull"},
+		{8, "ship"},
+		{16, "go"}
+	};
+
 public:
 
 	IOProcessor() :map_size(200), berth_size(10), boat_size(5), robot_size(10) {};
