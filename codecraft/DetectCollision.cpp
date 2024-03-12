@@ -53,6 +53,7 @@ void DetectCollision::ClearRobotCollision(vector<Command>& robot_commands, vecto
 	if (this->collision_points.size() > 0)
 	{
 		// TODO 对每个冲突点进行处理
+		// NOTE 如果robots下标和robot_commands下标对应，则可以优化
 		for (int i = 0; i < this->collision_points.size(); i++)
 		{
 			CollisionPoint cp = this->collision_points[i];
@@ -64,12 +65,21 @@ void DetectCollision::ClearRobotCollision(vector<Command>& robot_commands, vecto
 			{
 				// 一进一退
 				// 让robot[0]后退
-				
+				for (int j = 0; j < 1; j++)
+				{
+					int robot_id = cp_data[j].first, cmd_idx = cp_data[j].second;
+					this->RetreatRobotPath(robots[robot_id], robot_commands[cmd_idx]);
+				}
 			}
 			else if (cp_data.size() == 3)
 			{
 				// 一进两退
 				// 让robot[0], robot[1]后退
+				for (int j = 0; j < 2; j++)
+				{
+					int robot_id = cp_data[j].first, cmd_idx = cp_data[j].second;
+					this->RetreatRobotPath(robots[robot_id], robot_commands[cmd_idx]);
+				}
 			}
 			else if (cp_data.size() == 4)
 			{
@@ -78,8 +88,7 @@ void DetectCollision::ClearRobotCollision(vector<Command>& robot_commands, vecto
 				for (int j = 0; j < 3; j++)
 				{
 					int robot_id = cp_data[j].first, cmd_idx = cp_data[j].second;
-					int dir = robot_commands[cmd_idx].param_2;
-					//robot_commands[cmd_idx].param_2 = (dir + 2) % 4;
+					this->RetreatRobotPath(robots[robot_id], robot_commands[cmd_idx]);
 				}
 			}
 		}
@@ -101,8 +110,32 @@ void DetectCollision::RetreatRobotPath(Robot& robot, Command& robot_command)
 		cur = robot.send_good_cur;
 		path = robot.send_good_path;
 	}
+	
+	// 定义机器人前一步下标
+	int back_cur = cur - 1;
+
+	if (back_cur == -1)	// 如果回退到了原点，则让机器人原地不动
+	{
+		return;
+	}
 
 	// 计算回退方向
+	int nx = path[cur].first, ny = path[cur].second;			// 当前坐标
+	int bx = path[back_cur].first, by = path[back_cur].second;	// 上一步坐标
+	int dx = bx - nx, dy = by - ny;								// 计算得出方向坐标
+	
+	int param_2 = 0;	// move 的第2个参数
+	if (dx == 0)
+	{
+		if (dy == 1) param_2 = 0;	// right
+		if (dy == -1) param_2 = 1;	// left
+	}
+	else if (dy == 0)
+	{
+		if (dx == -1) param_2 = 2;	// up
+		if (dx == 1) param_2 = 3;	// down
+	}
 
 	// 修改指令为回退指令
+	robot_command.param_2 = param_2;
 }
