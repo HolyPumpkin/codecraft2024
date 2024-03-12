@@ -33,7 +33,7 @@ void DetectCollision::DetectRobotInNextStep(vector<Command>& robot_commands, vec
 	}
 
 	// 遍历统计好的move point，提取出collision point
-	for (auto point : move_points)
+	for (auto &point : move_points)
 	{
 		int nx = point.first.first, ny = point.first.second;
 		vector<pair<int, int>> data = point.second;
@@ -46,6 +46,8 @@ void DetectCollision::DetectRobotInNextStep(vector<Command>& robot_commands, vec
 
 void DetectCollision::ClearRobotCollision(vector<Command>& robot_commands, vector<Robot>& robots)
 {
+	//保证每次检测之前，碰撞点集为空
+	this->collision_points.clear();
 	// 调用碰撞检测函数，从而生成碰撞点集
 	this->DetectRobotInNextStep(robot_commands, robots);
 

@@ -15,7 +15,7 @@ const int boat_num = 5;		// 轮船数量
 int money, frame_id;		// 钱数，帧数
 
 /***********************************************************************/
-vector<vector<char>> map(N, vector<char>(N));	// 地图
+vector<vector<char>> ch_map(N, vector<char>(N));	// 地图
 vector<Robot> robots(robot_num);				// 机器人
 vector<Berth> berths(berth_num);				// 泊口
 vector<Boat> boats(boat_num);					// 轮船
@@ -28,13 +28,13 @@ vector<Command> boat_cmd(boat_num);				// 轮船指令集
 int main()
 {
 	IOProcessor iop;
-	iop.ReadMapFromFile("../maps/map3.txt", map);
-	iop.OutputMap(map);
+	iop.ReadMapFromFile("../maps/map3.txt", ch_map);
+	iop.OutputMap(ch_map);
 
 	Test test;
 	Point s = Point(30, 122);
 	Point e = Point(66, 56);
-	test.displayPath(map, s, e, N, n);
+	test.displayPath(ch_map, s, e, N, n);
 
 
 	return 0;
