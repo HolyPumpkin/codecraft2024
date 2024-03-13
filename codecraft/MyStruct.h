@@ -71,6 +71,8 @@ struct Command
 	// 
 	// -1：表示无参数
 	int param_2;
+
+
 	Command(int _key, int _id, int _param_2) : key(_key), id(_id), param_2(_param_2) {};
 };
 
@@ -92,7 +94,14 @@ struct Boat
 	// 是否正在装货
 	bool is_loading;
 
-	Boat(){}
+	Boat()
+	{
+		this->capacity = 0;
+		this->cur_load = 0;
+		this->pos = 0;
+		this->status = 2;
+		this->is_loading = false;
+	}
 
 	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2), is_loading(false) {};
 };
@@ -101,6 +110,12 @@ struct Berth
 {
 	// 左上角坐标
 	int x, y;
+
+	// 泊位的尺寸
+	int r_size, c_size;
+
+	// 右下角坐标
+	int rdx, rdy;
 
 	// 泊口运输到虚拟点的时间
 	int transport_time;
@@ -114,15 +129,31 @@ struct Berth
 	// 当前货物总价值
 	int cur_goods_val;
 
-	Berth() {}
+	Berth() 
+	{
+		this->x = 0;
+		this->y = 0;
+		this->r_size = 4;
+		this->r_size = 4;
+		this->rdx = 0;
+		this->rdy = 0;
+		this->transport_time = 0;
+		this->loading_speed = 0;
+		this->cur_goods_num = 0;
+		this->cur_goods_val = 0;
+	}
 
-	Berth(int x, int y, int transport_time, int loading_speed) {
+	Berth(int x, int y, int transport_time, int loading_speed, int row, int col) {
 		this->x = x;
 		this->y = y;
 		this->transport_time = transport_time;
 		this->loading_speed = loading_speed;
 		this->cur_goods_num = 0;
 		this->cur_goods_val = 0;
+		this->r_size = row;
+		this->c_size = col;
+		this->rdx = x + row;
+		this->rdy = y + col;
 	}
 };
 
@@ -134,6 +165,10 @@ struct Robot
 	// 是否携带物品
 	// 0：未携带；1：携带
 	int is_carry;
+
+	// 是否被指派
+	// 0：未指派；1：被指派
+	int is_assigned;
 
 	// 机器人状态
 	// 0：恢复；1：正常
@@ -148,7 +183,16 @@ struct Robot
 	// 送物路径
 	vector<pair<int, int>> send_good_path;
 
-	Robot() {}
+	Robot() 
+	{
+		this->x = 0;
+		this->y = 0;
+		this->is_carry = 0;
+		this->status = 1;
+		this->fetch_good_cur = 0;
+		this->send_good_cur = 0;
+		this->is_assigned = 0;
+	}
 
 	Robot(int x, int y) {
 		this->x = x;
@@ -157,6 +201,7 @@ struct Robot
 		this->status = 1;
 		this->fetch_good_cur = 0;
 		this->send_good_cur = 0;
+		this->is_assigned = 0;
 	}
 };
 
@@ -174,7 +219,14 @@ struct Good
 	//是否已被指派给某机器人
 	bool is_assigned;
 
-	Good() {};
+	Good() 
+	{
+		this->x = 0;
+		this->y = 0;
+		this->ttl = 1000;
+		this->val = 0;
+		this->is_assigned = false;
+	}
 
 	// 构造函数（每个物品生命周期为1000帧）
 	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_y), ttl(1000), is_assigned(false) {};

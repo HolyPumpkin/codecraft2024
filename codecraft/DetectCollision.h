@@ -10,6 +10,8 @@ private:
 
 public:
 	
+	DetectCollision() = default;
+
 	// 通过机器人下一步位置，检测产生冲突的点
 	void DetectRobotInNextStep(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
 

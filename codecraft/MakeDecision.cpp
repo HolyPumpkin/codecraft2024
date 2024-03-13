@@ -298,3 +298,10 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 
 	return res;
 }
+
+vector<Command> MakeDecision::makeNullCmd(int robot_id)
+{
+	vector<Command> res;
+	res.push_back(Command(-1, robot_id, -1));
+	return res;
+}

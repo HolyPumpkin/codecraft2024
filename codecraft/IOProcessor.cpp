@@ -92,6 +92,8 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 		int berth_id;
 		scanf("%d", &berth_id);
 		scanf("%d%d%d%d", &berths[berth_id].x, &berths[berth_id].y, &berths[berth_id].transport_time, &berths[berth_id].loading_speed);
+		berths[berth_id].rdx = berths[berth_id].x + berths[berth_id].r_size - 1;
+		berths[berth_id].rdy = berths[berth_id].y + berths[berth_id].c_size - 1;
 	}
 
 	int boat_capacity;

@@ -29,6 +29,9 @@ public:
 	//生成某个轮船该帧的指令
 	vector<Command> makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths);
 
+	//生成空指令
+	vector<Command> makeNullCmd(int robot_id);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
