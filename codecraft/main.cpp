@@ -19,8 +19,16 @@ vector<vector<char>> ch_map(N, vector<char>(N));	// 地图
 vector<Robot> robots(robot_num);				// 机器人
 vector<Berth> berths(berth_num);				// 泊口
 vector<Boat> boats(boat_num);					// 轮船
-vector<Command> robot_cmd(robot_num);			// 机器人指令集
-vector<Command> boat_cmd(boat_num);				// 轮船指令集
+
+// 机器人一帧的指令集、轮船一帧的指令集
+// 第i行：第i个机器人的指令集
+// 
+// 存储格式可理解为邻接表，如下：
+// [robot1]: [rbt_cmd1, rbt_cmd2, ...]
+// [robot2]: [rbt_cmd1, rbt_cmd2, ...]
+// ...
+vector<vector<Command>> robot_cmd(robot_num);
+vector<vector<Command>> boat_cmd(boat_num);
 
 //int gds[N][N];
 

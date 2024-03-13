@@ -11,14 +11,10 @@ private:
 public:
 	
 	// 通过机器人下一步位置，检测产生冲突的点
-	// >> 机器人下一步操作的指令集
-	// >> 机器人集合
-	void DetectRobotInNextStep(vector<Command>& robot_commands, vector<Robot>& robots);
+	void DetectRobotInNextStep(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
 
 	// 解除机器人的碰撞
-	// >> 机器人下一步操作的指令集
-	// >> 机器人集合，以便于后面决策
-	void ClearRobotCollision(vector<Command>& robot_commands, vector<Robot>& robots);
+	void ClearRobotCollision(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
 
 	// 机器人路径回退
 	// >> 一个机器人对象

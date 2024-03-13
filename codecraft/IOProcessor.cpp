@@ -9,6 +9,14 @@ IOProcessor::IOProcessor(int map_size, int berth_size, int boat_size, int robot_
 	this->robot_size = robot_size;
 }
 
+/**
+ * ReadMapFromFile - 从文件读取地图
+ * @param file_path : 读取文件路径
+ * @param map : 存储地图的变量
+ * 
+ * @return : {0 : 成功, -1 : 失败}
+ * @note : none
+ */
 int IOProcessor::ReadMapFromFile(string file_path, vector<vector<char>>& map)
 {
 	ifstream ifs(file_path);
@@ -31,6 +39,13 @@ int IOProcessor::ReadMapFromFile(string file_path, vector<vector<char>>& map)
 	return 0;
 }
 
+/**
+ * OutputMap - 向控制台输出地图
+ * @param map : 存储地图的变量
+ * 
+ * @return : null
+ * @note : none
+ */
 void IOProcessor::OutputMap(vector<vector<char>>& map)
 {
 	for (int i = 0; i < this->map_size; i++)
@@ -47,6 +62,15 @@ void IOProcessor::OutputMap(vector<vector<char>>& map)
 	}
 }
 
+/**
+ * InitData - 读取初始化数据
+ * @param map : 存储地图的变量
+ * @param berths : 存储泊口的变量
+ * @param boats : 存储轮船的变量
+ * 
+ * @return : null
+ * @note : none
+ */
 void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats)
 {
 	// int map_size = map.size(), berth_size = berths.size(), boat_size = boats.size();
@@ -84,6 +108,17 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 	fflush(stdout);
 }
 
+/**
+ * InputFrameData - 读取每一帧的输入
+ * @param frame_id : 存储帧数的变量
+ * @param money : 存储钱数的变量
+ * @param goods : 存储货物的变量
+ * @param robots : 存储机器人的变量
+ * @param boats : 存储轮船的变量
+ * 
+ * @return : 当前指令的帧id
+ * @note : none
+ */
 int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, vector<Robot>& robots, vector<Boat>& boats)
 {
 	// 读取帧数、钱数
@@ -117,29 +152,46 @@ int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, 
 	return frame_id;
 }
 
-void IOProcessor::OutputCommand(vector<Command>& robot_cmd, vector<Command>& boat_cmd)
+/**
+ * OutputCommand - 向判题器输出每一帧的指令
+ * @param robot_cmd : 存储一帧的机器人指令集合
+ * @param boat_cmd :存储一帧的轮船指令集合
+ * 
+ * @return : null
+ */
+void IOProcessor::OutputCommand(vector<vector<Command>>& robot_cmd, vector<vector<Command>>& boat_cmd)
 {
 	// 输出机器人指令
-	for (int i = 0; i < this->robot_size; i++)
+	for (int i = 0; i < robot_cmd.size(); i++)
 	{
-		int cmd_key = robot_cmd[i].key;
-		if (cmd_key != -1)
+		for (int j = 0; j < robot_cmd[0].size(); j++)
 		{
-			printf("%s %d ", this->key_to_name[cmd_key], robot_cmd[i].id);
-			if (robot_cmd[i].param_2 != -1)
-				printf("%d\n", robot_cmd[i].param_2);
+			int cmd_key = robot_cmd[i][j].key;
+			if (cmd_key == -1)
+			{
+				printf("%s %d ", this->key_to_name[cmd_key], robot_cmd[i][j].id);
+				if (robot_cmd[i][j].param_2 != -1)
+				{
+					printf("%d\n", robot_cmd[i][j].param_2);
+				}
+			}
 		}
 	}
 
 	// 输出轮船指令
-	for (int i = 0; i < this->boat_size; i++)
+	for (int i = 0; i < boat_cmd.size(); i++)
 	{
-		int cmd_key = boat_cmd[i].key;
-		if (cmd_key != -1)
+		for (int j = 0; j < boat_cmd[0].size(); j++)
 		{
-			printf("%s %d ", this->key_to_name[cmd_key], boat_cmd[i].id);
-			if (boat_cmd[i].param_2 != -1)
-				printf("%d\n", boat_cmd[i].param_2);
+			int cmd_key = boat_cmd[i][j].key;
+			if (cmd_key == -1)
+			{
+				printf("%s %d ", this->key_to_name[cmd_key], boat_cmd[i][j].id);
+				if (boat_cmd[i][j].param_2 != -1)
+				{
+					printf("%d\n", boat_cmd[i][j].param_2);
+				}
+			}
 		}
 	}
 
