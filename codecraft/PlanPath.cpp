@@ -2,7 +2,7 @@
 
 /**
  * PlanPath - 根据输入构造路径规划类实例
- * @_map: 二维字符地图
+ * @_maze: 二维字符地图
  * @_N: 构造地图大小
  * @_n: 实际地图大小
  *
@@ -14,9 +14,9 @@
  * 注意事项/约束条件：
  * 无
  */
-PlanPath::PlanPath(vector<vector<char>>& _map, int _N, int _n)
+PlanPath::PlanPath(vector<vector<char>>& _maze, int _N, int _n)
 {
-	this->map = _map;
+	this->maze = _maze;
     this->N = _N;
     this->n = _n;
 }
@@ -210,14 +210,14 @@ vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
             }
             //邻居不可达
             if (nx < 0 || nx >= n || ny < 0 || ny >= n
-                || map[nx][ny] == '*' || map[nx][ny] == '#')
+                || maze[nx][ny] == '*' || maze[nx][ny] == '#')
             {
                 continue;
             }
 
             //得到一个有效邻居坐标
             Point* Neighbor = new Point(nx, ny);
-            map[nx][ny] = '/';
+            maze[nx][ny] = '/';
             //已访问过邻居节点
             if (visited[Neighbor->x][Neighbor->y] == 1)
                 continue;

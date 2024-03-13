@@ -85,13 +85,16 @@ struct Boat
 	// 位置（泊口ID、虚拟点-1）
 	int pos;
 
-	// 状态
-	// 0：运输中；1：装货或运输完成；2：泊外等待中
+	// 官方输入状态
+	// 0：表示移动(运输)中；1：表示正常运行状态(即装货状态或运输完成状态)；2：表示泊位外等待状态
 	int status;
+
+	// 是否正在装货
+	bool is_loading;
 
 	Boat(){}
 
-	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2) {};
+	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2), is_loading(false) {};
 };
 
 struct Berth
@@ -162,14 +165,17 @@ struct Good
 	// 坐标
 	int x, y;
 
-	// time_to_live
+	// time_to_live,初始为1000帧，每一帧自减1
 	int ttl;
 
 	// 价值
 	int val;
 
+	//是否已被指派给某机器人
+	bool is_assigned;
+
 	Good() {};
 
-	// 构造函数（每个物品生命周期为20）
-	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_y), ttl(20) {};
+	// 构造函数（每个物品生命周期为1000帧）
+	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_y), ttl(1000), is_assigned(false) {};
 };

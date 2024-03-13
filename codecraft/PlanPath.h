@@ -7,7 +7,7 @@ class PlanPath
 public:
 	/* 构造函数 */
 	PlanPath() = default;
-	explicit PlanPath(vector<vector<char>>& _map, int _N, int _n); // 通过二维字符地图初始化
+	explicit PlanPath(vector<vector<char>>& _maze, int _N, int _n); // 通过二维字符地图初始化
 
 	/* 成员函数 */
 	int getDis(Point& start, Point& end);
@@ -28,7 +28,7 @@ public:
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
-	vector<vector<char>> map;	//二维字符地图
+	vector<vector<char>> maze;	//二维字符地图
 	
 };
 
