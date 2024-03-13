@@ -52,23 +52,35 @@ struct Command
 	// 指令名称
 	// // -1：表示空指令
 	// 机器人指令
-	// // 1：move；2：get；4：pull
+	// // 1：move
+	// // 2：get
+	// // 4：pull
 	// 轮船指令
-	// // 8：ship；16：go 
+	// // 8：ship
+	// // 16：go 
 	int key;
 
 	// （机器人/轮船） ID
 	int id;
 
 	// 参数 2 
+	// 1.若为机器人move指令，则表示移动方向，0表示右移一格，1表示左移一格，2表示上移一格，3表示下移一格
+	// 2.若为机器人get、pull指令，则无此参数
+	// 3.若为轮船ship指令，则表示泊位id，取值[0,9]
+	// 4.若为轮船go指令，则无此参数
+	// 
 	// -1：表示无参数
 	int param_2;
+	Command(int _key, int _id, int _param_2) : key(_key), id(_id), param_2(_param_2) {};
 };
 
 struct Boat
 {
-	// 容量
+	// 容量，最多能装的物品数
 	int capacity;
+
+	// 当前装载物品数量
+	int cur_load;
 
 	// 位置（泊口ID、虚拟点-1）
 	int pos;
@@ -76,6 +88,10 @@ struct Boat
 	// 状态
 	// 0：运输中；1：装货或运输完成；2：泊外等待中
 	int status;
+
+	Boat(){}
+
+	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2) {};
 };
 
 struct Berth
@@ -89,6 +105,12 @@ struct Berth
 	// 装载速度
 	int loading_speed;
 
+	// 当前货物数量
+	int cur_goods_num;
+
+	// 当前货物总价值
+	int cur_goods_val;
+
 	Berth() {}
 
 	Berth(int x, int y, int transport_time, int loading_speed) {
@@ -96,6 +118,8 @@ struct Berth
 		this->y = y;
 		this->transport_time = transport_time;
 		this->loading_speed = loading_speed;
+		this->cur_goods_num = 0;
+		this->cur_goods_val = 0;
 	}
 };
 
@@ -128,6 +152,8 @@ struct Robot
 		this->y = y;
 		this->is_carry = 0;
 		this->status = 1;
+		this->fetch_good_cur = 0;
+		this->send_good_cur = 0;
 	}
 };
 
