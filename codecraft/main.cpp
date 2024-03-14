@@ -55,7 +55,7 @@ int main()
 
 	// ×Ü³õÊ¼»¯
 	iop.InitData(ch_map, berths, boats);
-	for (int frame_id = 0; frame_id < 15000; ++frame_id)
+	for (int zhen = 0; zhen < 15000; ++zhen)
 	{
 		iop.InputFrameData(frame_id, money, goods, robots, boats);
 
