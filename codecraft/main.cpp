@@ -34,6 +34,34 @@ vector<vector<Command>> robot_cmd(robot_num);
 vector<vector<Command>> boat_cmd(boat_num);
 
 //int gds[N][N];
+static void printCmd(Command& cmd)
+{
+	if (1 == cmd.key)
+	{
+		printf("move %d %d\n", cmd.id, cmd.param_2);
+	}
+	else if (2 == cmd.key)
+	{
+		printf("get %d\n", cmd.id);
+	}
+	else if (4 == cmd.key)
+	{
+		printf("pull %d\n", cmd.id);
+	}
+	else if (8 == cmd.key)
+	{
+		printf("ship %d %d\n", cmd.id, cmd.param_2);
+	}
+	else if (16 == cmd.key)
+	{
+		printf("go %d\n", cmd.id);
+	}
+	else
+	{
+		return;
+	}
+
+}
 
 /***********************************************************************/
 int main()
@@ -114,11 +142,38 @@ int main()
 			robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
 		}
 
-		//todo:机器人碰撞检测（循环）
-			
-		//todo:轮船的操作
+		//机器人碰撞检测（循环）
+		while (-1 == dtc.ClearRobotCollision(robots, robot_cmd))
+		{
+			;	//直到本次没有碰撞
+		}
+
+		//轮船的操作
+		for (int boat_idx = 0; boat_idx < boat_num; ++boat_idx)
+		{
+			mkd.makeBoatCmd(boats[boat_idx], boat_idx, berths);
+		}
 
 		//输出指令
+		//输出机器人指令
+		for (auto& rbt_cmd_row : robot_cmd)
+		{
+			for (auto& rbt_cmd : rbt_cmd_row)
+			{
+				printCmd(rbt_cmd);
+			}
+		}
+		//输出轮船指令
+		for (auto& boat_cmd_row : boat_cmd)
+		{
+			for (auto& boat_cmd : boat_cmd_row)
+			{
+				printCmd(boat_cmd);
+			}
+		}
+		//输出OK
+		printf("OK\n");
+		fflush(stdout);
 	}
 
 
