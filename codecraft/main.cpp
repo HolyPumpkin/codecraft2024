@@ -48,13 +48,15 @@ int main()
 	test.displayPath(ch_map, s, e, N, n);*/
 
 	IOProcessor iop(n, berth_num, boat_num, robot_num);
-	
+
+	iop.InitData(ch_map, berths, boats);
+
 	MakeDecision mkd(ch_map, N, n);
 	
 	DetectCollision dtc;
 
 	// ×Ü³õÊ¼»¯
-	iop.InitData(ch_map, berths, boats);
+	
 	for (int zhen = 0; zhen < 15000; ++zhen)
 	{
 		iop.InputFrameData(frame_id, money, goods, robots, boats);
