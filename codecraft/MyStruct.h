@@ -229,5 +229,5 @@ struct Good
 	}
 
 	// 构造函数（每个物品生命周期为1000帧）
-	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_y), ttl(1000), is_assigned(false) {};
+	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_val), ttl(1000), is_assigned(false) {};
 };
