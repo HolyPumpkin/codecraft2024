@@ -6,6 +6,7 @@
 #include <map>
 #include <fstream>
 #include <string>
+#include <algorithm>
 using namespace std;
 
 struct Point

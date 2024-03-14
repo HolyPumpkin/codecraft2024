@@ -259,7 +259,7 @@ vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
         p = p->parent;
     }
     //ÕıÈ·ÅÅÁĞ
-    reverse(path.begin(), path.end());
+    std::reverse(path.begin(), path.end());
     return path;
     
 }

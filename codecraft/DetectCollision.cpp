@@ -60,10 +60,10 @@ void DetectCollision::DetectRobotInNextStep(vector<Robot>& robots, vector<vector
  * @param robots : 机器人集合
  * @param robot_commands : 机器人指令集集合
  *
- * @return : null
+ * @return : 整型，-1表示本次存在碰撞；0表示本次已不存在碰撞
  * @note : none
  */
-void DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Command>>& robot_commands)
+int DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Command>>& robot_commands)
 {
 	// 保证每次检测之前，碰撞点集为空
 	this->collision_points.clear();
@@ -114,7 +114,9 @@ void DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<C
 				}
 			}
 		}
+		return -1;
 	}
+	return 0;
 }
 
 /**

@@ -16,7 +16,7 @@ public:
 	void DetectRobotInNextStep(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
 
 	// 解除机器人的碰撞
-	void ClearRobotCollision(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
+	int ClearRobotCollision(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
 
 	// 机器人路径回退
 	// >> 一个机器人对象
