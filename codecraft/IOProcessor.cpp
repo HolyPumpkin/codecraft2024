@@ -172,7 +172,7 @@ void IOProcessor::OutputCommand(vector<vector<Command>>& robot_cmd, vector<vecto
 			int cmd_key = robot_cmd[i][j].key;
 			if (cmd_key != -1)
 			{
-				printf("%s %d", this->key_to_name[cmd_key], robot_cmd[i][j].id);
+				printf("%s %d", this->key_to_name[cmd_key].c_str(), robot_cmd[i][j].id);
 				if (robot_cmd[i][j].param_2 != -1)
 				{
 					printf(" %d", robot_cmd[i][j].param_2);
@@ -190,7 +190,7 @@ void IOProcessor::OutputCommand(vector<vector<Command>>& robot_cmd, vector<vecto
 			int cmd_key = boat_cmd[i][j].key;
 			if (cmd_key != -1)
 			{
-				printf("%s %d", this->key_to_name[cmd_key], boat_cmd[i][j].id);
+				printf("%s %d", this->key_to_name[cmd_key].c_str(), boat_cmd[i][j].id);
 				if (boat_cmd[i][j].param_2 != -1)
 				{
 					printf(" %d", boat_cmd[i][j].param_2);
