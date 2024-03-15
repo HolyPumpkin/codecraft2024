@@ -76,7 +76,8 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 	// int map_size = map.size(), berth_size = berths.size(), boat_size = boats.size();
 
 	// ∂¡»°µÿÕº
-	string line;
+	//string line;
+	char line[testMapSize];
 	for (int i = 0; i < this->map_size; i++)
 	{
 		scanf("%s", &line);

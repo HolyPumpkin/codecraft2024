@@ -9,6 +9,8 @@
 #include <algorithm>
 using namespace std;
 
+const int testMapSize = 210;
+
 struct Point
 {
 	int x, y;    //µã×ø±ê
