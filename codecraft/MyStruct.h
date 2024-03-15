@@ -169,6 +169,11 @@ struct Robot
 	// 0：未携带；1：携带
 	int is_carry;
 
+	// is_carry的孪生变量，用来判断is_carry是否改变
+	// 即机器人是否拿到或放下货物，初值设为与is_carry互异
+	// 如果和is_carry相同，则表示机器人拿到或放下货物
+	int last_is_carry;
+
 	// 是否被指派
 	// 0：未指派；1：被指派
 	int is_assigned;
@@ -195,6 +200,7 @@ struct Robot
 		this->fetch_good_cur = 0;
 		this->send_good_cur = 0;
 		this->is_assigned = 0;
+		this->last_is_carry = 1;
 	}
 
 	Robot(int x, int y) {
@@ -205,6 +211,7 @@ struct Robot
 		this->fetch_good_cur = 0;
 		this->send_good_cur = 0;
 		this->is_assigned = 0;
+		this->last_is_carry = 1;
 	}
 };
 

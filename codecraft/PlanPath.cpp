@@ -217,7 +217,6 @@ vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
 
             //得到一个有效邻居坐标
             Point* Neighbor = new Point(nx, ny);
-            maze[nx][ny] = '/';
             //已访问过邻居节点
             if (visited[Neighbor->x][Neighbor->y] == 1)
                 continue;

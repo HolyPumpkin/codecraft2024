@@ -65,7 +65,20 @@ int MakeDecision::assignRobotGet(Robot& bot, vector<Good>& goods)
 		PlanPath planpath(this->maze, this->N, this->n);
 		Point s = Point(bot.x, bot.y);
 		Point e = Point(i.x, i.y);
+		// 每次规划路径的时候都要把游标置零
 		bot.fetch_good_path = planpath.pathplanning(s, e);
+		bot.fetch_good_cur = 0;
+		// 路径规划失败，可能是死路
+		if (bot.fetch_good_path.empty())
+		{
+			return -1;
+		}
+		i.is_assigned = true;
+
+		// 测试路径规划
+		cout << " robot (" << bot.x << "," << bot.y << ")'s fetch_path: " << endl;
+		planpath.printPath(bot.fetch_good_path);
+
 		return 0;
 	}
 	//如果未在循环内return则表示没有合适的good指派，失败
@@ -109,8 +122,9 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 	PlanPath planpath(this->maze, this->N, this->n);
 	Point s = Point(bot.x, bot.y);
 	Point e = Point(berths[min_id].x, berths[min_id].y);
+	// 每次规划路径的时候都要把游标置零
 	bot.send_good_path = planpath.pathplanning(s, e);
-
+	bot.send_good_cur = 0;
 	return 0;
 }
 
@@ -187,6 +201,7 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 				{
 					res.push_back(Command(2, bot_id, -1));	//取物
 				}
+				bot.fetch_good_cur++;
 			}
 		}
 	}
@@ -242,6 +257,7 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 				{
 					res.push_back(Command(4, bot_id, -1));	//送物
 				}
+				bot.send_good_cur++;
 			}
 		}
 	}
@@ -290,6 +306,7 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	{
 		if (berths[i].cur_goods_val > max_val)
 		{
+			// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
 			max_val = berths[i].cur_goods_val;
 			max_val_id = i;
 		}

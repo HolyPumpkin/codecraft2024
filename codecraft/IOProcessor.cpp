@@ -80,10 +80,11 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 	char line[testMapSize];
 	for (int i = 0; i < this->map_size; i++)
 	{
-		scanf("%s", &line);
+		
+		scanf("%s", line);
 		for (int j = 0; j < this->map_size; j++)
 		{
-			map[i][j] = line[i];
+			map[i][j] = line[j];
 		}
 	}
 
@@ -143,6 +144,7 @@ int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, 
 		scanf("%d%d%d%d", &robots[i].is_carry, &robots[i].x, &robots[i].y, &robots[i].status);
 	}
 
+
 	// 读取轮船信息
 	for (int i = 0; i < this->boat_size; i++)
 	{
@@ -167,7 +169,7 @@ void IOProcessor::OutputCommand(vector<vector<Command>>& robot_cmd, vector<vecto
 	// 输出机器人指令
 	for (int i = 0; i < robot_cmd.size(); i++)
 	{
-		for (int j = 0; j < robot_cmd[0].size(); j++)
+		for (int j = 0; j < robot_cmd[i].size(); j++)
 		{
 			int cmd_key = robot_cmd[i][j].key;
 			if (cmd_key != -1)
@@ -185,7 +187,7 @@ void IOProcessor::OutputCommand(vector<vector<Command>>& robot_cmd, vector<vecto
 	// 输出轮船指令
 	for (int i = 0; i < boat_cmd.size(); i++)
 	{
-		for (int j = 0; j < boat_cmd[0].size(); j++)
+		for (int j = 0; j < boat_cmd[i].size(); j++)
 		{
 			int cmd_key = boat_cmd[i][j].key;
 			if (cmd_key != -1)

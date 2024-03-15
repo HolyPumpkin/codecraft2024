@@ -67,7 +67,83 @@ int main()
 		//机器人操作
 		for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
 		{
+			/* 重构部分 */
+			// is_carry发生改变，表示拿到或者放下了货物，此时要修改is_assigned的值为0，表示要重新指派
+			if (robots[rbt_idx].is_carry == robots[rbt_idx].last_is_carry)
+			{
+				robots[rbt_idx].is_assigned = 0;
+				// 保证孪生变量与is_carry始终不同
+				robots[rbt_idx].last_is_carry = robots[rbt_idx].last_is_carry ^ 1;
+			}
+
+			// 如果当前机器人未携带东西
+			if (0 == robots[rbt_idx].is_carry)
+			{
+				// 如果当前机器人已经被指派
+				if (1 == robots[rbt_idx].is_assigned)
+				{
+					// TODO 要判断货物的存活时间
+					
+					// 直接生成指令
+					robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
+				}
+				// 如果当前机器人未被指派
+				else if (0 == robots[rbt_idx].is_assigned)
+				{
+					// 先指派机器人去拿货物
+					int assign_success = mkd.assignRobotGet(robots[rbt_idx], goods);
+
+					// 如果指派失败，插入空指令，表示不做任何操作
+					if (-1 == assign_success)
+					{
+						robot_cmd[rbt_idx] = mkd.makeNullCmd(rbt_idx);
+						continue;
+					}
+					// 指派成功
+					else if (0 == assign_success) {
+						robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+					}
+					// 生成指令
+					robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
+				}
+			}
+			// 如果当前机器人携带东西
+			else if (1 == robots[rbt_idx].is_carry)
+			{
+				// 如果当前机器人已经被指派
+				if (1 == robots[rbt_idx].is_assigned)
+				{
+					// 直接生成指令
+					robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
+				}
+				// 如果当前机器人未被指派
+				else if (0 == robots[rbt_idx].is_assigned)
+				{
+					// 先指派机器人去拿货物
+					int assign_success = mkd.assighRobotSend(robots[rbt_idx], berths);
+
+					// 如果指派失败，插入空指令，表示不做任何操作
+					if (-1 == assign_success)
+					{
+						robot_cmd[rbt_idx] = mkd.makeNullCmd(rbt_idx);
+						continue;
+					}
+					// 指派成功
+					else if (0 == assign_success) {
+						robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+					}
+					// 生成指令
+					robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
+				}
+			}
+
+			/* 重构部分 */
+
+
+
+			/* 2024.3.15 latest----------------------------------------------- */
 			//如果当前机器人未被指派
+			/*
 			if (0 == robots[rbt_idx].is_assigned)
 			{
 				int assign_success;
@@ -86,11 +162,13 @@ int main()
 					// 指派成功
 					else if(0 == assign_success){
 						robots[rbt_idx].is_assigned = 1;
+						
 					}
 				}
 				//如果已携带
 				else if (1 == robots[rbt_idx].is_carry)
 				{
+					cout << " one robot is_carry ------------------------------------------------------------" << endl;
 					// 先指派机器人去送货物
 					assign_success = mkd.assighRobotSend(robots[rbt_idx], berths);
 					// 如果指派失败，插入空指令，表示不做任何操作
@@ -111,16 +189,16 @@ int main()
 					continue;
 				}
 			}
-
 			// 生成指令
-			robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
+			robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);*/
+			/* 2024.3.15 latest----------------------------------------------- */
 		}
 
 		//机器人碰撞检测（循环）
-		while (-1 == dtc.ClearRobotCollision(robots, robot_cmd))
-		{
-			;	//直到本次没有碰撞
-		}
+		//while (-1 == dtc.ClearRobotCollision(robots, robot_cmd))
+		//{
+		//	;	//直到本次没有碰撞
+		//}
 
 		//轮船的操作
 		for (int boat_idx = 0; boat_idx < boat_num; ++boat_idx)
