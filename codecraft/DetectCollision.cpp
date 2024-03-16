@@ -47,13 +47,16 @@ void DetectCollision::DetectRobotInNextStep(vector<Robot>& robots, vector<vector
 	{
 		int nx = point.first.first, ny = point.first.second;
 		vector<pair<int, int>> data = point.second;
-		/*if (data.size() > 1)
+		// 可能产生冲突的点
+
+		// v 1.0
+		if (data.size() > 1)
 		{
 			this->collision_points.push_back({ nx, ny, data });
-		}*/
+		}
 
-		// 可能产生冲突的点
-		this->collision_points.push_back({ nx, ny, data });
+		//// v2.0
+		//this->collision_points.push_back({ nx, ny, data });
 	}
 }
 
@@ -85,36 +88,38 @@ int DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Co
 			// 取出冲突产生的对象的数据
 			vector<pair<int, int>> cp_data = cp.data;
 
-			if (cp_data.size() == 1)
-			{
-				// 粗略方法，应该有一定效果
-				// 扫描序号在冲突点rbt_idx后面的所有机器人（防止对冲情况），是否在冲突点上
-				bool is_conflict = false;
-				int rbt_idx = cp_data[0].first, cmd_idx = cp_data[0].second;
+			//if (cp_data.size() == 1)
+			//{
+			//	// 粗略方法，应该有一定效果
+			//	// 扫描序号在冲突点rbt_idx后面的所有机器人（防止对冲情况），是否在冲突点上
+			//	bool is_conflict = false;
+			//	int rbt_idx = cp_data[0].first, cmd_idx = cp_data[0].second;
 
-				for (int j = rbt_idx + 1; j < robots.size(); j++)
-				{
-					int tx = robots[j].x, ty = robots[j].y;
-					if (cp.x == tx && cp.y == ty)
-					{
-						is_conflict = true;
-						break;
-					}
-				}
+			//	for (int j = rbt_idx + 1; j < robots.size(); j++)
+			//	{
+			//		int tx = robots[j].x, ty = robots[j].y;
+			//		if (cp.x == tx && cp.y == ty)
+			//		{
+			//			is_conflict = true;
+			//			break;
+			//		}
+			//	}
 
-				// is_conflict == true：有机器人在冲突点上，则后退
-				if (is_conflict)
-				{
-					this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
-				}
-				// is_conflict == false：没有，则暂停一帧
-				else
-				{
-					robot_commands[rbt_idx][cmd_idx].key = -1;
-					robot_commands[rbt_idx][cmd_idx].param_2 = -1;
-				}
-			}
-			else if (cp_data.size() == 2)
+			//	// is_conflict == true：有机器人在冲突点上，则后退
+			//	if (is_conflict)
+			//	{
+			//		this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
+			//	}
+			//	// is_conflict == false：没有，则暂停一帧
+			//	else
+			//	{
+			//		/*robot_commands[rbt_idx][cmd_idx].key = -1;
+			//		robot_commands[rbt_idx][cmd_idx].param_2 = -1;*/
+			//	}
+			//}
+			//else if (cp_data.size() == 2)
+
+			if (cp_data.size() == 2)
 			{
 				// 一进一退
 				// 让robot[0]后退
@@ -168,7 +173,7 @@ void DetectCollision::RetreatRobotPath(Robot& robot, Command& robot_command)
 		cur = robot.fetch_good_cur;
 		path = robot.fetch_good_path;
 	}
-	else if (robot.is_carry == 0) // 机器人在送物
+	else if (robot.is_carry == 1) // 机器人在送物
 	{
 		cur = robot.send_good_cur;
 		path = robot.send_good_path;
@@ -177,10 +182,8 @@ void DetectCollision::RetreatRobotPath(Robot& robot, Command& robot_command)
 	// 定义机器人前一步下标
 	int back_cur = cur - 1;
 
-	if (back_cur == -1)	// 如果回退到了原点，则让机器人原地不动
+	if (back_cur == -1)
 	{
-		robot_command.key = -1;
-		robot_command.param_2 = -1;
 		return;
 	}
 
