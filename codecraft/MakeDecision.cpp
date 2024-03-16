@@ -281,9 +281,16 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
  */
 vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths, int frame_id)
 {
+	vector<Command> res;	//返回值
+	if (frame_id == 1)
+	{
+		res.push_back(Command(8, boat_id, boat_id));	//ship指令
+		return res;
+	}
+
 	//得到轮船当前状态
 	int cur_status = this->boatStatusCheck(boat);
-	vector<Command> res;	//返回值
+	
 	//如果在运输中，或者在装货中，就保持不动
 	if (0 == boat.status || boat.is_loading)
 	{
