@@ -77,6 +77,9 @@ int main()
 			}
 		}
 
+		// 每一帧开始时检查机器人状态
+		mkd.robotInputCheck(robots, goods, frame_id);
+
 		// 机器人操作
 		for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
 		{
@@ -102,7 +105,7 @@ int main()
 				// 如果当前机器人已经被指派
 				if (1 == robots[rbt_idx].is_assigned)
 				{
-					// TODO 判断货物的存活时间,如果此时货物已经消失
+					// 判断货物的存活时间,如果此时货物已经消失
 					if (frame_id >= robots[rbt_idx].good_end_frame)
 					{
 						robots[rbt_idx].is_assigned = 0;

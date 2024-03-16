@@ -32,6 +32,9 @@ public:
 	//生成空指令
 	vector<Command> makeNullCmd(int robot_id);
 
+	//根据已有信息判断机器人逻辑指针是否需要修改以及路径是否需要重规划
+	void robotInputCheck(vector<Robot>& robots, list<Good>& goods, int cur_frame_id);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小

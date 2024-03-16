@@ -204,7 +204,6 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 				{
 					res.push_back(Command(2, bot_id, -1));	//取物
 				}
-				bot.fetch_good_cur++;
 			}
 		}
 	}
@@ -260,7 +259,6 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 				{
 					res.push_back(Command(4, bot_id, -1));	//送物
 				}
-				bot.send_good_cur++;
 			}
 		}
 	}
@@ -319,9 +317,163 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	return res;
 }
 
+/**
+ * @brief 生成机器人空指令
+ * @param robot_id 
+ * @return vector<Command>
+*/
 vector<Command> MakeDecision::makeNullCmd(int robot_id)
 {
 	vector<Command> res;
 	res.push_back(Command(-1, robot_id, -1));
 	return res;
 }
+
+/**
+ * @brief 检测每一帧的机器人输入，其中逻辑指针直到此处才有可能被修改，
+ *        所以在判断时逻辑指针指向的其实是机器人上一帧的位置。
+ * 
+ * @note  此函数主要是保证每一帧生成指令之前，游标的位置是正确的
+ * 
+ * @param robots 
+*/
+void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int cur_frame_id)
+{
+	for (int rbt_idx = 0; rbt_idx < robots.size(); ++rbt_idx)
+	{
+		//如果当前机器人是未携带物品的状态
+		if (0 == robots[rbt_idx].is_carry && !robots[rbt_idx].fetch_good_path.empty())
+		{
+			//游标不合法
+			/*if (robots[rbt_idx].fetch_good_cur > robots[rbt_idx].fetch_good_path.size() - 1
+				|| robots[rbt_idx].fetch_good_cur < 0)
+			{
+				continue;
+			}*/
+			// 取出机器人当前的位置和上一帧的位置
+			std::pair<int, int> cur_pos(robots[rbt_idx].x, robots[rbt_idx].y);
+			std::pair<int, int> pre_pos = robots[rbt_idx].fetch_good_path[robots[rbt_idx].fetch_good_cur];
+
+			//如果他在取物路径逻辑指针所指的位置，即相比于上一帧没动
+			//证明该机器人：1.碰撞；2.get；3.pull；4.空指令
+			//所以此时不修改游标
+			if (cur_pos == pre_pos)
+			{
+				continue;
+			}
+			//如果坐标不相等，说明机器人肯定走了，要么沿着路径走了，要么偏离路径
+			else if (cur_pos != pre_pos)
+			{
+				//判断是否沿着路径走
+				//如果上一步在终点，则跳过，会给他重新分配send路径
+				if (robots[rbt_idx].fetch_good_cur == robots[rbt_idx].fetch_good_path.size() - 1)
+				{
+					continue;
+				}
+				//如果上一步在起点，只判断是否在后一步
+				else if (robots[rbt_idx].fetch_good_cur == 0)
+				{
+					//在路径中，则修改逻辑指针
+					if (robots[rbt_idx].fetch_good_path[robots[rbt_idx].fetch_good_cur + 1] == cur_pos)
+					{
+						robots[rbt_idx].fetch_good_cur = robots[rbt_idx].fetch_good_cur + 1;
+					}
+
+					//没有在路径中，需要重新规划路径
+					else
+					{
+						//修改指派变量，后续重新规划
+						robots[rbt_idx].is_assigned = 0;
+					}
+				}
+				//如果在路径中（不在起点或终点，防止下标越界）
+				else if (robots[rbt_idx].fetch_good_cur < robots[rbt_idx].fetch_good_path.size() - 1
+			     && robots[rbt_idx].fetch_good_cur > 0)
+				{
+					//沿着路径走，前一步或者后一步，都把逻辑指针修改
+					if (robots[rbt_idx].fetch_good_path[robots[rbt_idx].fetch_good_cur - 1] == cur_pos)
+					{
+						robots[rbt_idx].fetch_good_cur = robots[rbt_idx].fetch_good_cur - 1;
+					}
+					else if (robots[rbt_idx].fetch_good_path[robots[rbt_idx].fetch_good_cur + 1] == cur_pos)
+					{
+						robots[rbt_idx].fetch_good_cur = robots[rbt_idx].fetch_good_cur + 1;
+					}
+
+					//没有在路径中，需要重新规划路径
+					else
+					{
+						//修改指派变量，后续重新规划
+						robots[rbt_idx].is_assigned = 0;
+					}
+				}
+
+			}
+
+		}
+		//如果当前机器人是携带物品的状态
+		else if (1 == robots[rbt_idx].is_carry && !robots[rbt_idx].send_good_path.empty())
+		{
+			// 取出机器人当前的位置和上一帧的位置
+			std::pair<int, int> cur_pos(robots[rbt_idx].x, robots[rbt_idx].y);
+			std::pair<int, int> pre_pos = robots[rbt_idx].send_good_path[robots[rbt_idx].send_good_cur];
+
+			//如果他在取物路径逻辑指针所指的位置，即相比于上一帧没动
+			//证明该机器人：1.碰撞；2.get；3.pull；4.空指令
+			//所以此时不修改游标
+			if (cur_pos == pre_pos)
+			{
+				continue;
+			}
+			//如果坐标不相等，说明机器人肯定走了，要么沿着路径走了，要么偏离路径
+			else if (cur_pos != pre_pos)
+			{
+				//判断是否沿着路径走
+				//如果上一步在终点，则跳过，会给他重新分配send路径
+				if (robots[rbt_idx].send_good_cur == robots[rbt_idx].send_good_path.size() - 1)
+				{
+					continue;
+				}
+				//如果上一步在起点，只判断是否在后一步
+				else if (robots[rbt_idx].send_good_cur == 0)
+				{
+					//在路径中，则修改逻辑指针
+					if (robots[rbt_idx].send_good_path[robots[rbt_idx].send_good_cur + 1] == cur_pos)
+					{
+						robots[rbt_idx].send_good_cur = robots[rbt_idx].send_good_cur + 1;
+					}
+
+					//没有在路径中，需要重新规划路径
+					else
+					{
+						//修改指派变量，后续重新规划
+						robots[rbt_idx].is_assigned = 0;
+					}
+				}
+				//如果在路径中（不在起点或终点，防止下标越界）
+				else if (robots[rbt_idx].send_good_cur < robots[rbt_idx].send_good_path.size() - 1
+					&& robots[rbt_idx].send_good_cur > 0)
+				{
+					//沿着路径走，前一步或者后一步，都把逻辑指针修改
+					if (robots[rbt_idx].send_good_path[robots[rbt_idx].send_good_cur - 1] == cur_pos)
+					{
+						robots[rbt_idx].send_good_cur = robots[rbt_idx].send_good_cur - 1;
+					}
+					else if (robots[rbt_idx].send_good_path[robots[rbt_idx].send_good_cur + 1] == cur_pos)
+					{
+						robots[rbt_idx].send_good_cur = robots[rbt_idx].send_good_cur + 1;
+					}
+
+					//没有在路径中，需要重新规划路径
+					else
+					{
+						//修改指派变量，后续重新规划
+						robots[rbt_idx].is_assigned = 0;
+					}
+				}
+
+			}
+		}
+	}
+}
+
