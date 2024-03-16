@@ -239,6 +239,8 @@ int main()
 		//	;	//直到本次没有碰撞
 		//}
 
+		dtc.ClearRobotCollision(robots, robot_cmd);
+
 		//轮船的操作
 		for (int boat_idx = 0; boat_idx < boat_num; ++boat_idx)
 		{
