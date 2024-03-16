@@ -94,6 +94,9 @@ struct Boat
 	// 0：表示移动(运输)中；1：表示正常运行状态(即装货状态或运输完成状态)；2：表示泊位外等待状态
 	int status;
 
+	// 上一帧的状态
+	int last_status;
+
 	// 开始装货的帧数
 	int start_load_frame;
 
@@ -111,14 +114,15 @@ struct Boat
 		this->capacity = 0;
 		this->cur_load = 0;
 		this->pos = 0;
-		this->status = 2;
+		this->status = 0;
 		this->is_loading = false;
 		this->start_load_frame = 0;
 		this->end_load_frame = 0;
 		this->loading_time = 1000;
+		this->last_status = 0;
 	}
 
-	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2), start_load_frame(0), end_load_frame(0), loading_time(1000), is_loading(false) {};
+	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(0), start_load_frame(0), end_load_frame(0), loading_time(1000), is_loading(false), last_status(0){};
 };
 
 struct Berth

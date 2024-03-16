@@ -279,8 +279,10 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
  * 有些时候可能会生成多条指令；
  * 就算轮船不动也会生成key==-1的空指令
  */
-vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths)
+vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths, int frame_id)
 {
+	//得到轮船当前状态
+	int cur_status = this->boatStatusCheck(boat);
 	vector<Command> res;	//返回值
 	//如果在运输中，或者在装货中，就保持不动
 	if (0 == boat.status || boat.is_loading)
@@ -288,32 +290,80 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 		res.push_back(Command(-1, boat_id, -1));	//空指令
 		return res;
 	}
-	//在泊位装货完成，go去虚拟点
-	else if (1 == boat.status && boat.pos != -1)
+	//状态未改变
+	if (cur_status == -1)
 	{
-		res.push_back(Command(16, boat_id, -1));	//go指令
-	}
-	/* 其余情况都需要指定一个泊位然后过去 */
-	//有未知错误导致没有泊位，船就不动
-	if (0 == berths.size())
-	{
-		res.push_back(Command(-1, boat_id, -1));
-		return res;
-	}
-	//找到泊位中货物价值最大的
-	int max_val = berths[0].cur_goods_val;
-	int max_val_id = 0;
-	for (int i = 0; i < berths.size();++i)
-	{
-		if (berths[i].cur_goods_val > max_val)
+		if (boat.status == 1)
 		{
-			// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
-			max_val = berths[i].cur_goods_val;
-			max_val_id = i;
+			//如果到了装货结束的时间，去虚拟点
+			if (frame_id >= boat.end_load_frame)
+			{
+				res.push_back(Command(16, boat_id, -1));	//go指令
+				boat.is_loading = false;
+			}
 		}
 	}
-	res.push_back(Command(8, boat_id, max_val_id));	//ship指令
-
+	//boat的status从0变成1
+	if (1 == cur_status)
+	{
+		//到虚拟点卸货完成
+		if (-1 == boat.pos)
+		{
+			boat.cur_load = 0;
+			//找到泊位中货物价值最大的
+			int max_val = berths[0].cur_goods_val;
+			int max_val_id = 0;
+			for (int i = 0; i < berths.size(); ++i)
+			{
+				if (berths[i].cur_goods_val > max_val)
+				{
+					// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
+					max_val = berths[i].cur_goods_val;
+					max_val_id = i;
+				}
+			}
+			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+		}
+		//到泊位装货
+		else
+		{
+			boat.is_loading = true;
+			res.push_back(Command(-1, boat_id, -1));	//空指令
+		}
+	}
+	//boat的status从1变成0
+	else if (0 == cur_status)
+	{
+		boat.is_loading = false;
+		//如果在泊位
+		if (boat.pos != -1)
+		{
+			//去虚拟点
+			res.push_back(Command(16, boat_id, -1));	//go指令
+		}
+		else
+		{
+			//找到泊位中货物价值最大的
+			int max_val = berths[0].cur_goods_val;
+			int max_val_id = 0;
+			for (int i = 0; i < berths.size(); ++i)
+			{
+				if (berths[i].cur_goods_val > max_val)
+				{
+					// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
+					max_val = berths[i].cur_goods_val;
+					max_val_id = i;
+				}
+			}
+			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+		}
+	}
+	//其他情况直接去虚拟点
+	else
+	{
+		boat.is_loading = false;
+		res.push_back(Command(16, boat_id, -1));	//go指令	
+	}
 	return res;
 }
 
@@ -474,6 +524,88 @@ void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int
 
 			}
 		}
+	}
+}
+
+/**
+ * @brief 根据每一帧输入的信息判断轮船的状态
+ * @param boat 
+ * @return 整数值，不同的值分别对应以下几种状态
+ * -1：boat的status没变化
+ * 0：boat的status从1变成0
+ * 1：boat的status从0变成1
+ * 2：boat的status从2变成1
+ * 3：boat的status从2变成0
+ * 4：boat的status从0变成2
+ * 
+*/
+int MakeDecision::boatStatusCheck(Boat& boat)
+{
+	if (boat.last_status == boat.status)
+	{
+		return -1;
+	}
+	else if (boat.last_status == 1 && boat.status == 0)
+	{
+		return 0;
+	}
+	else if (boat.last_status == 0 && boat.status == 1)
+	{
+		return 1;
+	}
+	else if (boat.last_status == 2 && boat.status == 1)
+	{
+		return 2;
+	}
+	else if (boat.last_status == 2 && boat.status == 0)
+	{
+		return 3;
+	}
+	else if (boat.last_status == 0 && boat.status == 2)
+	{
+		return 4;
+	}
+	return -1;
+}
+
+/**
+ * @brief 根据每一帧的输入更新轮船信息
+ * @param boats 
+*/
+void MakeDecision::boatInputCheck(vector<Boat>& boats, int frame_id)
+{
+	for (int i = 0; i < boats.size(); ++i)
+	{
+		// 如果当前帧大于等于结束装货的帧，就修改is_loading，表示装货完成
+		if (frame_id >= boats[i].end_load_frame)
+		{
+			boats[i].is_loading = false;
+		}
+		// 到虚拟点后要把物品清空
+		if (boats[i].pos == -1)
+		{
+			boats[i].cur_load = 0;
+		}
+		// 得到轮船当前的状态
+		int boat_status = this->boatStatusCheck(boats[i]);
+		if (boat_status == 1 || boat_status == 2)
+		{
+			boats[i].start_load_frame = frame_id;
+			boats[i].end_load_frame = frame_id + boats[i].loading_time;
+		}
+
+	}
+}
+
+/**
+ * @brief 迁移轮船的状态信息
+ * @param boats 
+*/
+void MakeDecision::boatStatusTrans(vector<Boat>& boats)
+{
+	for (auto& i : boats)
+	{	
+		i.last_status = i.status;
 	}
 }
 

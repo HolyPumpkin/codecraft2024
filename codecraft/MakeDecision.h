@@ -27,13 +27,22 @@ public:
 	vector<Command> makeRobotCmd(Robot& bot, int bot_id);
 
 	//生成某个轮船该帧的指令
-	vector<Command> makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths);
+	vector<Command> makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths, int frame_id);
 
 	//生成空指令
 	vector<Command> makeNullCmd(int robot_id);
 
 	//根据已有信息判断机器人逻辑指针是否需要修改以及路径是否需要重规划
 	void robotInputCheck(vector<Robot>& robots, list<Good>& goods, int cur_frame_id);
+
+	//判断轮船的状态
+	int boatStatusCheck(Boat& boat);
+
+	//根据已有信息判断轮船内部变量是否需要修改
+	void boatInputCheck(vector<Boat>& boats, int frame_id);
+
+	//轮船状态迁移
+	void boatStatusTrans(vector<Boat>& boats);
 
 private:
 	int N;	//构造地图大小

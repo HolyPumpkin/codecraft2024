@@ -59,6 +59,8 @@ int main()
 	
 	for (int zhen = 0; zhen < 15000; ++zhen)
 	{
+		mkd.boatStatusTrans(boats);
+
 		iop.InputFrameData(frame_id, money, goods, robots, boats);
 
 		/* todo：此处应该判断上一帧指令是否正常执行，根据执行结果修改结构体属性 */
@@ -79,6 +81,9 @@ int main()
 
 		// 每一帧开始时检查机器人状态
 		mkd.robotInputCheck(robots, goods, frame_id);
+
+		// 每一帧开始时检查轮船状态
+		mkd.boatInputCheck(boats, frame_id);
 
 		// 机器人操作
 		for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
@@ -175,63 +180,9 @@ int main()
 					robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
 				}
 			}
+		}
 
 			/* 重构部分 */
-
-
-
-			/* 2024.3.15 latest----------------------------------------------- */
-			//如果当前机器人未被指派
-			/*
-			if (0 == robots[rbt_idx].is_assigned)
-			{
-				int assign_success;
-				//如果未携带
-				if (0 == robots[rbt_idx].is_carry)
-				{
-					// 先指派机器人去拿货物
-					assign_success = mkd.assignRobotGet(robots[rbt_idx], goods);
-					
-					// 如果指派失败，插入空指令，表示不做任何操作
-					if (-1 == assign_success)
-					{
-						robot_cmd[rbt_idx] = mkd.makeNullCmd(rbt_idx);
-						continue;
-					}
-					// 指派成功
-					else if(0 == assign_success){
-						robots[rbt_idx].is_assigned = 1;
-						
-					}
-				}
-				//如果已携带
-				else if (1 == robots[rbt_idx].is_carry)
-				{
-					cout << " one robot is_carry ------------------------------------------------------------" << endl;
-					// 先指派机器人去送货物
-					assign_success = mkd.assighRobotSend(robots[rbt_idx], berths);
-					// 如果指派失败，插入空指令，表示不做任何操作
-					if (-1 == assign_success)
-					{
-						robot_cmd[rbt_idx] = mkd.makeNullCmd(rbt_idx);
-						continue;
-					}
-					// 指派成功
-					else if (0 == assign_success) {
-						robots[rbt_idx].is_assigned = 1;
-					}
-				}
-				//如果出现错误，就不做任何操作
-				else
-				{
-					robot_cmd[rbt_idx] = mkd.makeNullCmd(rbt_idx);
-					continue;
-				}
-			}
-			// 生成指令
-			robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);*/
-			/* 2024.3.15 latest----------------------------------------------- */
-		}
 
 		//机器人碰撞检测（循环）
 		//while (-1 == dtc.ClearRobotCollision(robots, robot_cmd))
@@ -244,7 +195,7 @@ int main()
 		//轮船的操作
 		for (int boat_idx = 0; boat_idx < boat_num; ++boat_idx)
 		{
-			boat_cmd[boat_idx] = mkd.makeBoatCmd(boats[boat_idx], boat_idx, berths);
+			boat_cmd[boat_idx] = mkd.makeBoatCmd(boats[boat_idx], boat_idx, berths, frame_id);
 		}
 
 		//输出指令
