@@ -4,7 +4,7 @@
  * DetectRobotInNextStep - 通过机器人下一步位置，检测产生冲突的点
  * @param robots : 机器人集合
  * @param robot_commands : 机器人指令集集合
- * 
+ *
  * @return : null
  * @note : none
  */
@@ -27,16 +27,15 @@ void DetectCollision::DetectRobotInNextStep(vector<Robot>& robots, vector<vector
 			// rbt_idx 和 robot_cmd.id 应当是相等的
 			int key = robot_cmd.key, id = robot_cmd.id, param_2 = robot_cmd.param_2;
 
+			// 取出机器人当前坐标
+			int x = robots[id].x, y = robots[id].y;
+
 			// move <==> key == 1
 			if (key == 1)
 			{
-				// 取出机器人当前坐标
-				int x = robots[id].x, y = robots[id].y;
-
 				// 得到机器人move后的坐标
 				int nx = x + dx[param_2], ny = y + dy[param_2];
 
-				// 用哈希统计move点。
 				// 将下一步移动同一点的（机器人，指令下标）压入一个vector
 				move_points[{nx, ny}].push_back({ id, cmd_idx });
 			}
@@ -48,10 +47,13 @@ void DetectCollision::DetectRobotInNextStep(vector<Robot>& robots, vector<vector
 	{
 		int nx = point.first.first, ny = point.first.second;
 		vector<pair<int, int>> data = point.second;
-		if (data.size() > 1)
+		/*if (data.size() > 1)
 		{
 			this->collision_points.push_back({ nx, ny, data });
-		}
+		}*/
+
+		// 可能产生冲突的点
+		this->collision_points.push_back({ nx, ny, data });
 	}
 }
 
@@ -83,7 +85,36 @@ int DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Co
 			// 取出冲突产生的对象的数据
 			vector<pair<int, int>> cp_data = cp.data;
 
-			if (cp_data.size() == 2)
+			if (cp_data.size() == 1)
+			{
+				// 粗略方法，应该有一定效果
+				// 扫描序号在冲突点rbt_idx后面的所有机器人（防止对冲情况），是否在冲突点上
+				bool is_conflict = false;
+				int rbt_idx = cp_data[0].first, cmd_idx = cp_data[0].second;
+
+				for (int j = rbt_idx + 1; j < robots.size(); j++)
+				{
+					int tx = robots[j].x, ty = robots[j].y;
+					if (cp.x == tx && cp.y == ty)
+					{
+						is_conflict = true;
+						break;
+					}
+				}
+
+				// is_conflict == true：有机器人在冲突点上，则后退
+				if (is_conflict)
+				{
+					this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
+				}
+				// is_conflict == false：没有，则暂停一帧
+				else
+				{
+					robot_commands[rbt_idx][cmd_idx].key = -1;
+					robot_commands[rbt_idx][cmd_idx].param_2 = -1;
+				}
+			}
+			else if (cp_data.size() == 2)
 			{
 				// 一进一退
 				// 让robot[0]后退
@@ -120,7 +151,7 @@ int DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Co
 }
 
 /**
- * RetreatRobotPath - 机器人路径回退
+ * RetreatRobotPath - 机器人路径回退。回退应该取消当前指令，然后增加反向指令。
  * @param robot : 一个机器人
  * @param robot_command : 一条机器人指令
  *
@@ -148,6 +179,8 @@ void DetectCollision::RetreatRobotPath(Robot& robot, Command& robot_command)
 
 	if (back_cur == -1)	// 如果回退到了原点，则让机器人原地不动
 	{
+		robot_command.key = -1;
+		robot_command.param_2 = -1;
 		return;
 	}
 
@@ -169,5 +202,6 @@ void DetectCollision::RetreatRobotPath(Robot& robot, Command& robot_command)
 	}
 
 	// 修改指令为回退指令
+	robot_command.key = 1;
 	robot_command.param_2 = param_2;
 }
