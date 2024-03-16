@@ -41,7 +41,7 @@ MakeDecision::MakeDecision(vector<vector<char>>& _maze, int _N, int _n)
    * 注意事项/约束条件：
    * 指派失败的情况可能有多种，后续完善
    */
-int MakeDecision::assignRobotGet(Robot& bot, vector<Good>& goods)
+int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id)
 {
 	//无货物
 	if (goods.empty())
@@ -57,7 +57,7 @@ int MakeDecision::assignRobotGet(Robot& bot, vector<Good>& goods)
 			continue;
 		}
 		//不可达，即货物在机器人到之前就消失
-		if ((abs(i.x - bot.x) + abs(i.y - bot.y)) >= i.ttl)
+		if ((abs(i.x - bot.x) + abs(i.y - bot.y)) >= i.end_frame - cur_frame_id)
 		{
 			continue;
 		}
@@ -73,11 +73,13 @@ int MakeDecision::assignRobotGet(Robot& bot, vector<Good>& goods)
 		{
 			return -1;
 		}
+		// 被指派成功要修改内部变量，记录该货物结束时间，机器人当前价值
 		i.is_assigned = true;
-
+		bot.good_end_frame = i.end_frame;
+		bot.robot_val = i.val;
 		// 测试路径规划
-		cout << " robot (" << bot.x << "," << bot.y << ")'s fetch_path: " << endl;
-		planpath.printPath(bot.fetch_good_path);
+		/*cout << " robot (" << bot.x << "," << bot.y << ")'s fetch_path: " << endl;
+		planpath.printPath(bot.fetch_good_path);*/
 
 		return 0;
 	}
@@ -125,6 +127,7 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 	// 每次规划路径的时候都要把游标置零
 	bot.send_good_path = planpath.pathplanning(s, e);
 	bot.send_good_cur = 0;
+	bot.berth_id = min_id;
 	return 0;
 }
 
@@ -209,7 +212,7 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 	else
 	{
 		path_size = bot.send_good_path.size();
-		//如果取物路径的逻辑指针不合法，则暂时不动
+		//如果送物路径的逻辑指针不合法，则暂时不动
 		if (bot.send_good_cur < 0 || bot.send_good_cur >= path_size)
 		{
 			res.push_back(Command(-1, bot_id, -1));
@@ -253,7 +256,7 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 			{
 				res.push_back(Command(1, bot_id, dir));
 				//如果当前再走一步就到了目标点，则可以再产生一条pull指令
-				if (bot.fetch_good_cur == path_size - 2)
+				if (bot.send_good_cur == path_size - 2)
 				{
 					res.push_back(Command(4, bot_id, -1));	//送物
 				}

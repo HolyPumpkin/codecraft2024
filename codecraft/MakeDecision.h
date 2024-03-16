@@ -18,7 +18,7 @@ public:
 	/* 决策函数 */
 
 	//指派某个机器人去拿货物
-	int assignRobotGet(Robot& bot, vector<Good>& goods);
+	int assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id);
 
 	//指派某个机器人去送货物
 	int assighRobotSend(Robot& bot, vector<Berth>& berths);

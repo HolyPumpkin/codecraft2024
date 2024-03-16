@@ -94,6 +94,15 @@ struct Boat
 	// 0：表示移动(运输)中；1：表示正常运行状态(即装货状态或运输完成状态)；2：表示泊位外等待状态
 	int status;
 
+	// 开始装货的帧数
+	int start_load_frame;
+
+	// 结束装货的帧数
+	int end_load_frame;
+
+	// 装货需要的时间，目前设置为固定值1000，表示一个最大值
+	int loading_time;
+
 	// 是否正在装货
 	bool is_loading;
 
@@ -104,9 +113,12 @@ struct Boat
 		this->pos = 0;
 		this->status = 2;
 		this->is_loading = false;
+		this->start_load_frame = 0;
+		this->end_load_frame = 0;
+		this->loading_time = 1000;
 	}
 
-	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2), is_loading(false) {};
+	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(2), start_load_frame(0), end_load_frame(0), loading_time(1000), is_loading(false) {};
 };
 
 struct Berth
@@ -178,12 +190,21 @@ struct Robot
 	// 0：未指派；1：被指派
 	int is_assigned;
 
+	// 正在去拿的货物的消失时间
+	int good_end_frame;
+
 	// 机器人状态
 	// 0：恢复；1：正常
 	int status;
 
 	// 取物路径下标，送物路径下标
 	int fetch_good_cur, send_good_cur;
+
+	// 当前要去的泊位id
+	int berth_id;
+
+	// 机器人当前价值，即所携带货物的价值
+	int robot_val;
 
 	// 取物路径
 	vector<pair<int, int>> fetch_good_path;
@@ -201,6 +222,9 @@ struct Robot
 		this->send_good_cur = 0;
 		this->is_assigned = 0;
 		this->last_is_carry = 1;
+		this->good_end_frame = -1;
+		this->berth_id = 0;
+		this->robot_val = 0;
 	}
 
 	Robot(int x, int y) {
@@ -212,6 +236,9 @@ struct Robot
 		this->send_good_cur = 0;
 		this->is_assigned = 0;
 		this->last_is_carry = 1;
+		this->good_end_frame = -1;
+		this->berth_id = 0;
+		this->robot_val = 0;
 	}
 };
 
@@ -220,8 +247,14 @@ struct Good
 	// 坐标
 	int x, y;
 
-	// time_to_live,初始为1000帧，每一帧自减1
+	// time_to_live,1000帧
 	int ttl;
+
+	// 货物起始帧
+	int start_frame;
+
+	// 货物终止帧，消失的时间点
+	int end_frame;
 
 	// 价值
 	int val;
@@ -236,8 +269,10 @@ struct Good
 		this->ttl = 1000;
 		this->val = 0;
 		this->is_assigned = false;
+		this->start_frame = 0;
+		this->end_frame = 0;
 	}
 
 	// 构造函数（每个物品生命周期为1000帧）
-	Good(int _x, int _y, int _val) : x(_x), y(_y), val(_val), ttl(1000), is_assigned(false) {};
+	Good(int _x, int _y, int _val, int frame_id) : x(_x), y(_y), val(_val), ttl(1000), start_frame(frame_id), end_frame(frame_id + 1000), is_assigned(false) {};
 };

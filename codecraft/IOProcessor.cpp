@@ -123,7 +123,7 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
  * @return : 当前指令的帧id
  * @note : none
  */
-int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, vector<Robot>& robots, vector<Boat>& boats)
+int IOProcessor::InputFrameData(int& frame_id, int& money, list<Good>& goods, vector<Robot>& robots, vector<Boat>& boats)
 {
 	// 读取帧数、钱数
 	scanf("%d%d", &frame_id, &money);
@@ -135,7 +135,8 @@ int IOProcessor::InputFrameData(int& frame_id, int& money, vector<Good>& goods, 
 	{
 		int x, y, val;
 		scanf("%d%d%d", &x, &y, &val);
-		goods.push_back(Good(x, y, val));
+		// 构造时添加frame_id，生成起始和终止帧
+		goods.push_back(Good(x, y, val, frame_id));
 	}
 
 	// 读取机器人信息

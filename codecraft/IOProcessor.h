@@ -34,7 +34,7 @@ public:
 	void InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats);
 
 	// 读取每一帧的输入
-	int InputFrameData(int& frame_id, int& money, vector<Good>& goods, vector<Robot>& robots, vector<Boat>& boats);
+	int InputFrameData(int& frame_id, int& money, list<Good>& goods, vector<Robot>& robots, vector<Boat>& boats);
 
 	// 向判题器输出每一帧的指令
 	void OutputCommand(vector<vector<Command>>& robot_cmd, vector<vector<Command>>& boat_cmd);

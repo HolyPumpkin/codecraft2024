@@ -21,7 +21,7 @@ vector<vector<char>> ch_map(N, vector<char>(N));	// 地图
 vector<Robot> robots(robot_num);				// 机器人
 vector<Berth> berths(berth_num);				// 泊口
 vector<Boat> boats(boat_num);					// 轮船
-vector<Good> goods;								// 货物
+list<Good> goods;								// 货物
 
 // 机器人一帧的指令集、轮船一帧的指令集
 // 第i行：第i个机器人的指令集
@@ -63,14 +63,34 @@ int main()
 
 		/* todo：此处应该判断上一帧指令是否正常执行，根据执行结果修改结构体属性 */
 		/* 依赖结构体中添加指令的vector */
-		
-		//机器人操作
+
+		// 每一帧开始判断有无应该消失的货物
+		for (auto it = goods.begin(); it != goods.end();)
+		{
+			if (frame_id >= it->end_frame)
+			{
+				it = goods.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+
+		// 机器人操作
 		for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
 		{
 			/* 重构部分 */
 			// is_carry发生改变，表示拿到或者放下了货物，此时要修改is_assigned的值为0，表示要重新指派
 			if (robots[rbt_idx].is_carry == robots[rbt_idx].last_is_carry)
 			{
+				// 如果is_carry从1变成0，表示在泊位放下了货物，要更改对应泊位的信息
+				if (0 == robots[rbt_idx].is_carry)
+				{
+					berths[robots[rbt_idx].berth_id].cur_goods_num++;
+					berths[robots[rbt_idx].berth_id].cur_goods_val += robots[rbt_idx].robot_val;
+				}
+
 				robots[rbt_idx].is_assigned = 0;
 				// 保证孪生变量与is_carry始终不同
 				robots[rbt_idx].last_is_carry = robots[rbt_idx].last_is_carry ^ 1;
@@ -82,8 +102,24 @@ int main()
 				// 如果当前机器人已经被指派
 				if (1 == robots[rbt_idx].is_assigned)
 				{
-					// TODO 要判断货物的存活时间
-					
+					// TODO 判断货物的存活时间,如果此时货物已经消失
+					if (frame_id >= robots[rbt_idx].good_end_frame)
+					{
+						robots[rbt_idx].is_assigned = 0;
+						// 先指派机器人去拿货物
+						int assign_success = mkd.assignRobotGet(robots[rbt_idx], goods, frame_id);
+
+						// 如果指派失败，插入空指令，表示不做任何操作
+						if (-1 == assign_success)
+						{
+							robot_cmd[rbt_idx] = mkd.makeNullCmd(rbt_idx);
+							continue;
+						}
+						// 指派成功
+						else if (0 == assign_success) {
+							robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+						}
+					}
 					// 直接生成指令
 					robot_cmd[rbt_idx] = mkd.makeRobotCmd(robots[rbt_idx], rbt_idx);
 				}
@@ -91,7 +127,7 @@ int main()
 				else if (0 == robots[rbt_idx].is_assigned)
 				{
 					// 先指派机器人去拿货物
-					int assign_success = mkd.assignRobotGet(robots[rbt_idx], goods);
+					int assign_success = mkd.assignRobotGet(robots[rbt_idx], goods, frame_id);
 
 					// 如果指派失败，插入空指令，表示不做任何操作
 					if (-1 == assign_success)
