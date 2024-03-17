@@ -1,6 +1,7 @@
 #pragma once
 #include "MyStruct.h"
 #include "PlanPath.h"
+#include "limits.h"
 /*
  * Change Logs:
  * Date           Author       Notes
