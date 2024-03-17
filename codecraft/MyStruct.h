@@ -148,6 +148,10 @@ struct Berth
 	// 当前货物总价值
 	int cur_goods_val;
 
+	// 泊位当前是否被一艘轮船占用，当轮船去这个泊位时，就修改为1，当轮船离开时，修改为0
+	// 0为未被占用，1为被占用
+	int is_occupied;
+
 	Berth() 
 	{
 		this->x = 0;
@@ -160,6 +164,7 @@ struct Berth
 		this->loading_speed = 0;
 		this->cur_goods_num = 0;
 		this->cur_goods_val = 0;
+		this->is_occupied = 0;
 	}
 
 	Berth(int x, int y, int transport_time, int loading_speed, int row, int col) {
@@ -173,6 +178,7 @@ struct Berth
 		this->c_size = col;
 		this->rdx = x + row;
 		this->rdy = y + col;
+		this->is_occupied = 0;
 	}
 };
 

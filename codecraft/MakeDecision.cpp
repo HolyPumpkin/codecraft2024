@@ -285,6 +285,8 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	if (frame_id == 1)
 	{
 		res.push_back(Command(8, boat_id, boat_id));	//ship指令
+		//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
+		berths[boat_id].is_occupied = 1;
 		return res;
 	}
 
@@ -306,6 +308,11 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 			if (frame_id >= boat.end_load_frame)
 			{
 				res.push_back(Command(16, boat_id, -1));	//go指令
+				//离开泊位去虚拟点，需要改变泊位状态为未被占用
+				if (boat.pos != -1)
+				{
+					berths[boat.pos].is_occupied = 0;
+				}
 				boat.is_loading = false;
 			}
 		}
@@ -320,9 +327,9 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 			//找到泊位中货物价值最大的
 			int max_val = berths[0].cur_goods_val;
 			int max_val_id = 0;
-			for (int i = 0; i < berths.size(); ++i)
+			for (int i = 1; i < berths.size(); ++i)
 			{
-				if (berths[i].cur_goods_val > max_val)
+				if (berths[i].cur_goods_val > max_val && berths[i].is_occupied == 0)
 				{
 					// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
 					max_val = berths[i].cur_goods_val;
@@ -330,6 +337,10 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 				}
 			}
 			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+			//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
+			berths[max_val_id].is_occupied = 1;
+
+
 		}
 		//到泊位装货
 		else
@@ -347,6 +358,11 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 		{
 			//去虚拟点
 			res.push_back(Command(16, boat_id, -1));	//go指令
+			//离开泊位去虚拟点，需要改变泊位状态为未被占用
+			if (boat.pos != -1)
+			{
+				berths[boat.pos].is_occupied = 0;
+			}
 		}
 		else
 		{
@@ -355,7 +371,7 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 			int max_val_id = 0;
 			for (int i = 0; i < berths.size(); ++i)
 			{
-				if (berths[i].cur_goods_val > max_val)
+				if (berths[i].cur_goods_val > max_val && berths[i].is_occupied == 0)
 				{
 					// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
 					max_val = berths[i].cur_goods_val;
@@ -363,13 +379,15 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 				}
 			}
 			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+			//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
+			berths[boat_id].is_occupied = 1;
 		}
 	}
 	//其他情况直接去虚拟点
 	else
 	{
 		boat.is_loading = false;
-		res.push_back(Command(16, boat_id, -1));	//go指令	
+		res.push_back(Command(16, boat_id, -1));	//go指令
 	}
 	return res;
 }
