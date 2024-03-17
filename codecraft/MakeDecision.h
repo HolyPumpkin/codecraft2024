@@ -44,6 +44,9 @@ public:
 	//轮船状态迁移
 	void boatStatusTrans(vector<Boat>& boats);
 
+	// 单个机器人重启
+	void robotReboot(Robot& robot);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小

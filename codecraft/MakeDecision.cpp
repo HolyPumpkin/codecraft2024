@@ -616,3 +616,31 @@ void MakeDecision::boatStatusTrans(vector<Boat>& boats)
 	}
 }
 
+/**
+ * @brief 单个机器人重启。
+ * @param robot 
+ */
+void MakeDecision::robotReboot(Robot& robot)
+{
+	// 取消指派状态
+	robot.is_assigned = 0;
+
+	// 清除路径信息
+	robot.fetch_good_cur = 0;
+	robot.send_good_cur = 0;
+	robot.fetch_good_path.clear();
+	robot.send_good_path.clear();
+
+	if (robot.is_carry == 0)		// 如果机器人未携带物品
+	{
+		robot.last_is_carry = 1;
+		robot.good_end_frame = -1;
+		robot.robot_val = 0;
+	}
+	else if (robot.is_carry == 1)	// 如果机器人携带物品
+	{
+		robot.last_is_carry = 0;
+		robot.berth_id = 0;
+	}
+}
+
