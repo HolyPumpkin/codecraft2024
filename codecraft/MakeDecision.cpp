@@ -62,7 +62,7 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
 			continue;
 		}
 		//找到一个可达且没被指派的货物
-		PlanPath planpath(this->maze, this->N, this->n, this->robots);
+		PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 		Point s = Point(bot.x, bot.y);
 		Point e = Point(i.x, i.y);
 		// 每次规划路径的时候都要把游标置零
@@ -121,7 +121,7 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 		}
 	}
 	//规划送物路径并存入机器人结构体
-	PlanPath planpath(this->maze, this->N, this->n, this->robots);
+	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 	Point s = Point(bot.x, bot.y);
 	Point e = Point(berths[min_id].x, berths[min_id].y);
 	// 每次规划路径的时候都要把游标置零
@@ -414,7 +414,7 @@ vector<Command> MakeDecision::makeNullCmd(int robot_id)
 */
 void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int cur_frame_id)
 {
-	this->robots = robots;	//每次先更新内部机器人为最新
+	this->own_robots = robots;	//每次先更新内部机器人为最新
 	for (int rbt_idx = 0; rbt_idx < robots.size(); ++rbt_idx)
 	{
 		//如果当前机器人是未携带物品的状态
@@ -663,6 +663,10 @@ void MakeDecision::robotReboot(Robot& robot)
 	}
 }
 
+/**
+ * @brief 重启所有应该被重启的机器人（重设一些状态）
+ * @param robots 
+*/
 void MakeDecision::rebootRobots(vector<Robot>& robots)
 {
 	for (auto& bot : robots)
@@ -682,11 +686,154 @@ void MakeDecision::rebootRobots(vector<Robot>& robots)
 	}
 }
 
+/**
+ * @brief 机器人状态迁移
+ * @param robots 
+*/
 void MakeDecision::robotStatusTrans(vector<Robot>& robots)
 {
 	for (auto& i : robots)
 	{
 		i.last_status = i.status;
+	}
+}
+
+/**
+ * @brief 根据当前帧数对应该消失的货物进行处理
+ * @param goods 
+ * @param frame_id 
+*/
+void MakeDecision::vanishGoods(list<Good>& goods, int frame_id)
+{
+	for (auto it = goods.begin(); it != goods.end();)
+	{
+		if (frame_id >= it->end_frame)
+		{
+			it = goods.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
+/**
+ * @brief 封装每一帧对机器人的操作，指派、生成指令等
+ * @param robots 
+ * @param goods 
+ * @param berths 
+ * @param frame_id 
+*/
+void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<vector<Command>>& robot_cmd,list<Good>& goods, vector<Berth>& berths, int frame_id)
+{
+	for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
+	{
+		/* 重构部分 */
+		// is_carry发生改变，表示拿到或者放下了货物，此时要修改is_assigned的值为0，表示要重新指派
+		if (robots[rbt_idx].is_carry == robots[rbt_idx].last_is_carry)
+		{
+			// 如果is_carry从1变成0，表示在泊位放下了货物，要更改对应泊位的信息
+			if (0 == robots[rbt_idx].is_carry)
+			{
+				berths[robots[rbt_idx].berth_id].cur_goods_num++;
+				berths[robots[rbt_idx].berth_id].cur_goods_val += robots[rbt_idx].robot_val;
+			}
+
+			robots[rbt_idx].is_assigned = 0;
+			// 保证孪生变量与is_carry始终不同
+			robots[rbt_idx].last_is_carry = robots[rbt_idx].last_is_carry ^ 1;
+		}
+
+		// 如果当前机器人未携带东西
+		if (0 == robots[rbt_idx].is_carry)
+		{
+			// 如果当前机器人已经被指派
+			if (1 == robots[rbt_idx].is_assigned)
+			{
+				// 判断货物的存活时间,如果此时货物已经消失
+				if (frame_id >= robots[rbt_idx].good_end_frame)
+				{
+					robots[rbt_idx].is_assigned = 0;
+					// 先指派机器人去拿货物
+					int assign_success = this->assignRobotGet(robots[rbt_idx], goods, frame_id);
+
+					// 如果指派失败，插入空指令，表示不做任何操作
+					if (-1 == assign_success)
+					{
+						robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+						continue;
+					}
+					// 指派成功
+					else if (0 == assign_success) {
+						robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+					}
+				}
+				// 直接生成指令
+				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+			// 如果当前机器人未被指派
+			else if (0 == robots[rbt_idx].is_assigned)
+			{
+				// 先指派机器人去拿货物
+				int assign_success = this->assignRobotGet(robots[rbt_idx], goods, frame_id);
+
+				// 如果指派失败，插入空指令，表示不做任何操作
+				if (-1 == assign_success)
+				{
+					robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+					continue;
+				}
+				// 指派成功
+				else if (0 == assign_success) {
+					robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+				}
+				// 生成指令
+				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+		}
+		// 如果当前机器人携带东西
+		else if (1 == robots[rbt_idx].is_carry)
+		{
+			// 如果当前机器人已经被指派
+			if (1 == robots[rbt_idx].is_assigned)
+			{
+				// 直接生成指令
+				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+			// 如果当前机器人未被指派
+			else if (0 == robots[rbt_idx].is_assigned)
+			{
+				// 先指派机器人去拿货物
+				int assign_success = this->assighRobotSend(robots[rbt_idx], berths);
+
+				// 如果指派失败，插入空指令，表示不做任何操作
+				if (-1 == assign_success)
+				{
+					robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+					continue;
+				}
+				// 指派成功
+				else if (0 == assign_success) {
+					robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+				}
+				// 生成指令
+				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+		}
+	}
+}
+
+/**
+ * @brief 封装每一帧对轮船的操作，生成指令等
+ * @param boats 
+ * @param frame_id 
+*/
+void MakeDecision::boatsOperate(vector<Boat>& boats, vector<vector<Command>>& boat_cmd, vector<Berth>& berths, int boat_num, int frame_id)
+{
+	for (int boat_idx = 0; boat_idx < boat_num; ++boat_idx)
+	{
+		boat_cmd[boat_idx] = this->makeBoatCmd(boats[boat_idx], boat_idx, berths, frame_id);
 	}
 }
 

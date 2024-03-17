@@ -51,13 +51,22 @@ public:
 	// 判断机器人是否需要重启，如果需要则重启
 	void rebootRobots(vector<Robot>& robots);
 
-	//机器人状态迁移
+	// 机器人状态迁移
 	void robotStatusTrans(vector<Robot>& robots);
+
+	// 判断是否有应该消失的货物
+	void vanishGoods(list<Good>& goods, int frame_id);
+
+	// 机器人接口函数，封装每一帧对机器人的操作，指派、生成指令等
+	void robotsOperate(vector<Robot>& robots, int robot_num, vector<vector<Command>>& robot_cmd, list<Good>& goods, vector<Berth>& berths, int frame_id);
+
+	// 轮船接口函数，封装每一帧对轮船的操作，生成指令等
+	void boatsOperate(vector<Boat>& boats, vector<vector<Command>>& boat_cmd, vector<Berth>& berths, int boat_num, int frame_id);
 
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
 	vector<vector<char>> maze;	//二维字符地图
-	vector<Robot> robots;	//机器人数组，需要保证每一帧这里的都是最新的
+	vector<Robot> own_robots;	//机器人数组，需要保证每一帧这里的都是最新的
 };
 
