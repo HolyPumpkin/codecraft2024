@@ -7,7 +7,7 @@ class PlanPath
 public:
 	/* 构造函数 */
 	PlanPath() = default;
-	explicit PlanPath(vector<vector<char>>& _maze, int _N, int _n); // 通过二维字符地图初始化
+	explicit PlanPath(vector<vector<char>>& _maze, int _N, int _n, vector<Robot> robots); // 通过二维字符地图初始化
 
 	/* 成员函数 */
 	int getDis(Point& start, Point& end);

@@ -62,7 +62,7 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
 			continue;
 		}
 		//找到一个可达且没被指派的货物
-		PlanPath planpath(this->maze, this->N, this->n);
+		PlanPath planpath(this->maze, this->N, this->n, this->robots);
 		Point s = Point(bot.x, bot.y);
 		Point e = Point(i.x, i.y);
 		// 每次规划路径的时候都要把游标置零
@@ -121,7 +121,7 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 		}
 	}
 	//规划送物路径并存入机器人结构体
-	PlanPath planpath(this->maze, this->N, this->n);
+	PlanPath planpath(this->maze, this->N, this->n, this->robots);
 	Point s = Point(bot.x, bot.y);
 	Point e = Point(berths[min_id].x, berths[min_id].y);
 	// 每次规划路径的时候都要把游标置零
@@ -396,6 +396,7 @@ vector<Command> MakeDecision::makeNullCmd(int robot_id)
 */
 void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int cur_frame_id)
 {
+	this->robots = robots;	//每次先更新内部机器人为最新
 	for (int rbt_idx = 0; rbt_idx < robots.size(); ++rbt_idx)
 	{
 		//如果当前机器人是未携带物品的状态
@@ -641,6 +642,33 @@ void MakeDecision::robotReboot(Robot& robot)
 	{
 		robot.last_is_carry = 0;
 		robot.berth_id = 0;
+	}
+}
+
+void MakeDecision::rebootRobots(vector<Robot>& robots)
+{
+	for (auto& bot : robots)
+	{
+		if (bot.last_status == bot.status)
+		{
+			continue;
+		}
+		else if (bot.status == 1)
+		{
+			continue;
+		}
+		else if (bot.status == 0)
+		{
+			robotReboot(bot);
+		}
+	}
+}
+
+void MakeDecision::robotStatusTrans(vector<Robot>& robots)
+{
+	for (auto& i : robots)
+	{
+		i.last_status = i.status;
 	}
 }
 

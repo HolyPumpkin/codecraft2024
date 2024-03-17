@@ -14,11 +14,19 @@
  * 注意事项/约束条件：
  * 无
  */
-PlanPath::PlanPath(vector<vector<char>>& _maze, int _N, int _n)
+PlanPath::PlanPath(vector<vector<char>>& _maze, int _N, int _n, vector<Robot> robots)
 {
 	this->maze = _maze;
     this->N = _N;
     this->n = _n;
+    //每次根据输入的机器人信息更新地图，恢复状态的机器人要视作障碍物，以免碰撞
+    for (auto& i : robots)
+    {
+        if (i.status == 0)
+        {
+            this->maze[i.x][i.y] = '#';
+        }
+    }
 }
 
 /**

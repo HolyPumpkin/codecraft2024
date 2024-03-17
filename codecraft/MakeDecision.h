@@ -47,9 +47,16 @@ public:
 	// 单个机器人重启
 	void robotReboot(Robot& robot);
 
+	// 判断机器人是否需要重启，如果需要则重启
+	void rebootRobots(vector<Robot>& robots);
+
+	//机器人状态迁移
+	void robotStatusTrans(vector<Robot>& robots);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
 	vector<vector<char>> maze;	//二维字符地图
+	vector<Robot> robots;	//机器人数组，需要保证每一帧这里的都是最新的
 };
 

@@ -201,6 +201,10 @@ struct Robot
 	// 0：恢复；1：正常
 	int status;
 
+	// 机器人上一帧的状态
+	// 0：恢复；1：正常
+	int last_status;
+
 	// 取物路径下标，送物路径下标
 	int fetch_good_cur, send_good_cur;
 
@@ -229,6 +233,7 @@ struct Robot
 		this->good_end_frame = -1;
 		this->berth_id = 0;
 		this->robot_val = 0;
+		this->last_status = 1;	//初始是正常状态
 	}
 
 	Robot(int x, int y) {
@@ -243,6 +248,7 @@ struct Robot
 		this->good_end_frame = -1;
 		this->berth_id = 0;
 		this->robot_val = 0;
+		this->last_status = 1;	//初始是正常状态
 	}
 };
 

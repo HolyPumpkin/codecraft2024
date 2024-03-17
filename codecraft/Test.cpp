@@ -12,7 +12,8 @@ void Test::displayPath(vector<vector<char>> map, Point& start, Point& end, int N
 		cout << " start is invalid!, please re-input" << endl;
 		return;
 	}
-	PlanPath pp = PlanPath(map, N, n);
+	vector<Robot> r(10);
+	PlanPath pp = PlanPath(map, N, n, r);
 	vector<pair<int, int>> path = pp.pathplanning(start, end);
 	for (auto& i : path)
 	{

@@ -59,8 +59,12 @@ int main()
 	
 	for (int zhen = 0; zhen < 15000; ++zhen)
 	{
+		//状态迁移
 		mkd.boatStatusTrans(boats);
 
+		mkd.robotStatusTrans(robots);
+
+		//读取每一帧信息
 		iop.InputFrameData(frame_id, money, goods, robots, boats);
 
 		/* todo：此处应该判断上一帧指令是否正常执行，根据执行结果修改结构体属性 */
@@ -84,6 +88,9 @@ int main()
 
 		// 每一帧开始时检查轮船状态
 		mkd.boatInputCheck(boats, frame_id);
+
+		// 每一帧来对机器人重启（如果有必要）
+		mkd.rebootRobots(robots);
 
 		// 机器人操作
 		for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
