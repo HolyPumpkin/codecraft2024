@@ -24,3 +24,16 @@ void Test::displayPath(vector<vector<char>> map, Point& start, Point& end, int N
 	IOProcessor iop;
 	iop.OutputMap(map);
 }
+
+void timetest()
+{
+	//时间测试的样例
+	std::ofstream outputFile("test.txt");	//测试
+	auto start = std::chrono::steady_clock::now();
+	//需要测试的代码位置
+	auto end = std::chrono::steady_clock::now();
+	auto duration_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	outputFile << "time:" << duration_ms << "us" << std::endl;
+	outputFile.close();
+	
+}
