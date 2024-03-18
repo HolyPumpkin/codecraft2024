@@ -312,6 +312,10 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 				if (boat.pos != -1)
 				{
 					berths[boat.pos].is_occupied = 0;
+
+					//轮船离开要更新泊位货物数量
+					int temp_value = berths[boat.pos].cur_goods_num - berths[boat.pos].loading_speed * boat.loading_time;
+					berths[boat.pos].cur_goods_num = (temp_value > 0) ? temp_value : 0;
 				}
 				boat.is_loading = false;
 			}
@@ -320,26 +324,36 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	//boat的status从0变成1
 	if (1 == cur_status)
 	{
-		//到虚拟点卸货完成
+		//到虚拟点卸货完成，去泊位
 		if (-1 == boat.pos)
 		{
 			boat.cur_load = 0;
-			//找到泊位中货物价值最大的
-			int max_val = berths[0].cur_goods_val;
+			//找到泊位中货物数量最大的
+			int max_val = berths[0].cur_goods_num;
 			int max_val_id = 0;
 			for (int i = 1; i < berths.size(); ++i)
 			{
-				if (berths[i].cur_goods_val > max_val && berths[i].is_occupied == 0)
+				if (berths[i].cur_goods_num > max_val && berths[i].is_occupied == 0)
 				{
-					// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
-					max_val = berths[i].cur_goods_val;
+					// 机器人放货物的时候要改变对应泊位的货物价值和货物量
+					max_val = berths[i].cur_goods_num;
 					max_val_id = i;
 				}
 			}
 			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+
 			//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
 			berths[max_val_id].is_occupied = 1;
 
+			//动态改变当前轮船的装货时间，根据要去的泊位货物数量和轮船容量、装载速度判断
+			if (berths[max_val_id].cur_goods_num >= boat.capacity)
+			{
+				boat.loading_time = boat.capacity / berths[max_val_id].loading_speed;
+			}
+			else if (berths[max_val_id].cur_goods_num < boat.capacity)
+			{
+				boat.loading_time = berths[max_val_id].cur_goods_num / berths[max_val_id].loading_speed;
+			}
 
 		}
 		//到泊位装货
@@ -362,25 +376,40 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 			if (boat.pos != -1)
 			{
 				berths[boat.pos].is_occupied = 0;
+
+				//轮船离开要更新泊位货物数量
+				int temp_value = berths[boat.pos].cur_goods_num - berths[boat.pos].loading_speed * boat.loading_time;
+				berths[boat.pos].cur_goods_num = (temp_value > 0) ? temp_value : 0;
 			}
 		}
 		else
 		{
-			//找到泊位中货物价值最大的
-			int max_val = berths[0].cur_goods_val;
+			//找到泊位中货物数量最大的
+			int max_val = berths[0].cur_goods_num;
 			int max_val_id = 0;
-			for (int i = 0; i < berths.size(); ++i)
+			for (int i = 1; i < berths.size(); ++i)
 			{
-				if (berths[i].cur_goods_val > max_val && berths[i].is_occupied == 0)
+				if (berths[i].cur_goods_num > max_val && berths[i].is_occupied == 0)
 				{
-					// TODO 机器人放货物的时候要改变对应泊位的货物价值和货物量
-					max_val = berths[i].cur_goods_val;
+					// 机器人放货物的时候要改变对应泊位的货物价值和货物量
+					max_val = berths[i].cur_goods_num;
 					max_val_id = i;
 				}
 			}
 			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
 			//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
 			berths[boat_id].is_occupied = 1;
+
+			//动态改变当前轮船的装货时间，根据要去的泊位货物数量和轮船容量、装载速度判断
+			if (berths[max_val_id].cur_goods_num >= boat.capacity)
+			{
+				boat.loading_time = boat.capacity / berths[max_val_id].loading_speed;
+			}
+			else if (berths[max_val_id].cur_goods_num < boat.capacity)
+			{
+				boat.loading_time = berths[max_val_id].cur_goods_num / berths[max_val_id].loading_speed;
+			}
+
 		}
 	}
 	//其他情况直接去虚拟点
