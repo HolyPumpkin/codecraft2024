@@ -324,6 +324,10 @@ void DetectCollision::CalculateCollisionPoints(vector<Robot>& robots, vector<vec
 	}
 }
 
+void DetectCollision::InitPointsData()
+{
+}
+
 /**
  * RetreatRobotPath - 机器人路径回退。回退应该取消当前指令，然后增加反向指令。
  * @param robot : 一个机器人
