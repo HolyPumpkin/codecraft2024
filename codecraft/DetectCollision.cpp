@@ -156,6 +156,96 @@ int DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Co
 }
 
 /**
+ * @brief 处理机器人碰撞问题
+ * @param robots
+ * @param robot_commands
+ * @return 处理后的指令集
+ */
+vector<vector<Command>> DetectCollision::HandleRobotCollision(vector<Robot>& robots, vector<vector<Command>>& robot_commands)
+{
+
+
+
+	return vector<vector<Command>>();
+}
+
+/**
+ * @brief 计算两类碰撞点
+ * @param robots
+ * @param robot_commands
+ */
+void DetectCollision::CalculateCollisionPoints(vector<Robot>& robots, vector<vector<Command>>& robot_commands)
+{
+	// 0: right; 1: left; 2: up; 3: down
+	int dx[4] = { 0, 0, -1, 1 }, dy[4] = { 1, -1, 0, 0 };
+
+	// 记录每个机器人当前的坐标
+	// [x, y] = rbt_id
+	map<int, map<int, int>> now_points;
+	for (int rbt_idx = 0; rbt_idx < robots.size(); rbt_idx++)
+	{
+		// 机器人现在的坐标
+		int x = robots[rbt_idx].x, y = robots[rbt_idx].y;
+		now_points[x][y] = 1;
+	}
+
+	// 计算移动后会碰撞另一个robot的robot
+	for (int rbt_idx = 0; rbt_idx < robots.size(); rbt_idx++)
+	{
+		// 机器人现在的坐标
+		int x = robots[rbt_idx].x, y = robots[rbt_idx].y;
+
+		// 机器人执行的指令
+		vector<Command> rbt_cmd = robot_commands[rbt_idx];
+
+		// 计算机器人执行指令后的坐标
+		for (int cmd_idx = 0; cmd_idx < rbt_cmd.size(); cmd_idx++)
+		{
+			int key = rbt_cmd[cmd_idx].key, param_2 = rbt_cmd[cmd_idx].param_2;
+
+			// move
+			if (key == 1)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					// 机器人移动后的坐标
+					int nx = x + dx[i], ny = y + dy[i];
+					
+					// 如果这个点存在机器人
+					// now_points.at(nx).at(ny)
+					if (now_points[nx][ny] == 1)
+					{
+
+					}
+
+					// 加入可能产生间隔碰撞点的情况
+					// 后续筛选机器人个数 > 1的间隔碰撞点
+					interval_points[{nx, ny}].push_back(rbt_idx);
+				}
+			}
+			// others
+			else
+			{
+
+			}
+		}
+
+		// 筛选机器人个数 > 1的点，从而得到间隔碰撞点
+		map<pair<int, int>, vector<int>>::iterator iter;
+		for (iter = interval_points.begin(); iter != interval_points.end();)
+		{
+			if (iter->second.size() < 2) // 擦除冲突机器人 < 2的点
+			{
+				interval_points.erase(iter++);
+			}
+		}
+
+
+
+	}
+}
+
+/**
  * RetreatRobotPath - 机器人路径回退。回退应该取消当前指令，然后增加反向指令。
  * @param robot : 一个机器人
  * @param robot_command : 一条机器人指令
