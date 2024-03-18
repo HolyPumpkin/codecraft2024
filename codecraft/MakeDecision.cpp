@@ -282,12 +282,23 @@ vector<Command> MakeDecision::makeRobotCmd(Robot& bot, int bot_id)
 vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>& berths, int frame_id)
 {
 	vector<Command> res;	//返回值
+	//初始化轮船位置
 	if (frame_id == 1)
 	{
 		res.push_back(Command(8, boat_id, boat_id));	//ship指令
 		//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
 		berths[boat_id].is_occupied = 1;
 		return res;
+	}
+	//如果剩余时间不够了，就让轮船进行最后一舞！
+	if(boat.pos != -1)
+	{
+		//留10帧作为空闲量，保证船最后能到虚拟点
+		if (15000 - frame_id < berths[boat.pos].transport_time + 10)
+		{
+			res.push_back(this->lastDance(boat_id));
+			return res;
+		}
 	}
 
 	//得到轮船当前状态
@@ -864,5 +875,15 @@ void MakeDecision::boatsOperate(vector<Boat>& boats, vector<vector<Command>>& bo
 	{
 		boat_cmd[boat_idx] = this->makeBoatCmd(boats[boat_idx], boat_idx, berths, frame_id);
 	}
+}
+
+/**
+ * @brief 轮船的最后一次送货
+ * @param boat 
+ * @return 指令数组
+*/
+Command MakeDecision::lastDance(int boat_id)
+{
+	return Command(16, boat_id, -1);	//go指令
 }
 

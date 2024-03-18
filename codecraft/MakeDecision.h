@@ -63,6 +63,9 @@ public:
 	// 轮船接口函数，封装每一帧对轮船的操作，生成指令等
 	void boatsOperate(vector<Boat>& boats, vector<vector<Command>>& boat_cmd, vector<Berth>& berths, int boat_num, int frame_id);
 
+	// 轮船最后一舞，生成去虚拟点的指令
+	Command lastDance(int boat_id);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
