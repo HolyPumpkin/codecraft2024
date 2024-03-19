@@ -11,7 +11,7 @@ private:
 	//========================================[ v 2.0 ]===============================================//
 
 	// 机器人移向同一个可行点而产生的碰撞点
-	map<pair<int, int>, vector<int>> interval_points;
+	map<pair<int, int>, vector<pair<int, int>> > interval_points;
 
 	// 机器人移向另一个机器人而产生的碰撞点
 	// [x, y] = [move_rbt_id, second_rbt_id]
@@ -41,7 +41,7 @@ public:
 	// 计算两类碰撞点
 	void CalculateCollisionPoints(vector<Robot>& robots, vector<vector<Command>>& robot_commands);
 
-	// 初始化基础数据
+	// 初始化各类点数据
 	void InitPointsData();
 
 	//========================================[ v 2.0 ]===============================================//

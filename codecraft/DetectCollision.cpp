@@ -88,37 +88,6 @@ int DetectCollision::ClearRobotCollision(vector<Robot>& robots, vector<vector<Co
 			// 取出冲突产生的对象的数据
 			vector<pair<int, int>> cp_data = cp.data;
 
-			//if (cp_data.size() == 1)
-			//{
-			//	// 粗略方法，应该有一定效果
-			//	// 扫描序号在冲突点rbt_idx后面的所有机器人（防止对冲情况），是否在冲突点上
-			//	bool is_conflict = false;
-			//	int rbt_idx = cp_data[0].first, cmd_idx = cp_data[0].second;
-
-			//	for (int j = rbt_idx + 1; j < robots.size(); j++)
-			//	{
-			//		int tx = robots[j].x, ty = robots[j].y;
-			//		if (cp.x == tx && cp.y == ty)
-			//		{
-			//			is_conflict = true;
-			//			break;
-			//		}
-			//	}
-
-			//	// is_conflict == true：有机器人在冲突点上，则后退
-			//	if (is_conflict)
-			//	{
-			//		this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
-			//	}
-			//	// is_conflict == false：没有，则暂停一帧
-			//	else
-			//	{
-			//		/*robot_commands[rbt_idx][cmd_idx].key = -1;
-			//		robot_commands[rbt_idx][cmd_idx].param_2 = -1;*/
-			//	}
-			//}
-			//else if (cp_data.size() == 2)
-
 			if (cp_data.size() == 2)
 			{
 				// 一进一退
@@ -166,14 +135,18 @@ vector<vector<Command>> DetectCollision::HandleRobotCollision(vector<Robot>& rob
 	// 初始化各类点数据
 	this->InitPointsData();
 
-	// 重新生成指令
+	// 计算碰撞点
+	this->CalculateCollisionPoints(robots, robot_commands);
+
+	// 需要拷贝原数据，防止修改原数据
+	vector<Robot>& new_robots = robots;
 	vector<vector<Command>> new_robot_commands = robot_commands;
 
 	// 先处理间隔碰撞点
-
+	this->HandleIntervalPoints(new_robots, new_robot_commands);
 
 	// 再处理邻近碰撞点
-
+	this->HandleAdjacentPoints(new_robots, new_robot_commands);
 
 
 	return new_robot_commands;
@@ -189,15 +162,14 @@ void DetectCollision::HandleIntervalPoints(vector<Robot>& robots, vector<vector<
 	for (auto& mp : this->interval_points)
 	{
 		// 获取产生当前间隔冲突点的机器人id集合
-		vector<int> rbt_set = mp.second;
+		vector<pair<int, int>> rbt_set = mp.second;
 
 		// 情况处理
 		if (rbt_set.size() == 2)		// 一进一退，让robot[0]后退
 		{
 			for (int i = 0; i < 1; i++)
 			{
-				int rbt_idx = rbt_set[i];
-				int cmd_idx = rbt_idx;	// 机器人下标和机器人指令下标相对应
+				int rbt_idx = rbt_set[i].first, cmd_idx = rbt_set[i].second; // 机器人下标和机器人指令下标相对应
 				this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
 			}
 		}
@@ -205,8 +177,7 @@ void DetectCollision::HandleIntervalPoints(vector<Robot>& robots, vector<vector<
 		{
 			for (int i = 0; i < 2; i++)
 			{
-				int rbt_idx = rbt_set[i];
-				int cmd_idx = rbt_idx;	// 机器人下标和机器人指令下标相对应
+				int rbt_idx = rbt_set[i].first, cmd_idx = rbt_set[i].second; // 机器人下标和机器人指令下标相对应
 				this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
 			}
 		}
@@ -214,8 +185,7 @@ void DetectCollision::HandleIntervalPoints(vector<Robot>& robots, vector<vector<
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int rbt_idx = rbt_set[i];
-				int cmd_idx = rbt_idx;	// 机器人下标和机器人指令下标相对应
+				int rbt_idx = rbt_set[i].first, cmd_idx = rbt_set[i].second; // 机器人下标和机器人指令下标相对应
 				this->RetreatRobotPath(robots[rbt_idx], robot_commands[rbt_idx][cmd_idx]);
 			}
 		}
@@ -233,6 +203,10 @@ void DetectCollision::HandleIntervalPoints(vector<Robot>& robots, vector<vector<
  */
 void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<Command>>& robot_commands)
 {
+	// 用链表复制一个指令集用以调整
+	list<vector<Command>> modify_robot_commands(robot_commands.begin(), robot_commands.end());
+
+	// 遍历处理邻近碰撞点
 	for (auto& mp : this->adjacent_points)
 	{
 		// 获取产生当前邻近冲突点的两个机器人id
@@ -240,17 +214,115 @@ void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<
 		int first_id = pii.first, second_id = pii.second;
 
 		// 获得两个机器人的指令
-		Command first_cmd = robot_commands[first_id][0];
-		Command second_cmd = robot_commands[second_id][0];
+		// NOTE 需要考虑下标越界的隐患
+		int first_cmd_idx = -1, second_cmd_idx = -1;
+		for (int i = 0; i < robot_commands[first_id].size(); i++)
+		{
+			first_cmd_idx = i;
+			if (robot_commands[first_id][i].key == 1)
+			{
+				break;
+			}
+		}
+		for (int i = 0; i < robot_commands[second_id].size(); i++)
+		{
+			second_cmd_idx = i;
+			if (robot_commands[second_id][i].key == 1)
+			{
+				break;
+			}
+		}
+		// 使用引用，方便直接修改原来的robot_commands
+		Command& first_cmd = robot_commands[first_id][first_cmd_idx];
+		Command& second_cmd = robot_commands[second_id][second_cmd_idx];
+
+		int first_cmd_key = first_cmd.key, first_cmd_param_2 = first_cmd.param_2;
+		int second_cmd_key = second_cmd.key, second_cmd_param_2 = second_cmd.param_2;
 
 		// 情况处理
-		
 		// move & move
 			// (up | down) & (left | right)：
 			// (->  ->) 同向：要保持前面一个机器人指令先执行
-			// (->  <-) 对冲：一个回退一个前进，回退要在前进之前执行
-
+		if (first_cmd_key == 1 && second_cmd_key == 1)
+		{
+			// (left & right) | (up & down) 对冲：一个回退一个前进，回退要在前进之前执行
+			if ((first_cmd_param_2 == 0 && second_cmd_param_2 == 1) ||
+				(first_cmd_param_2 == 2 && second_cmd_param_2 == 3))
+			{
+				// 对冲情况mp会记录两次，只需修改一次就可以
+				// 因此只考虑（右、左）和（上、下），不处理（左、右）和（下、上）
+				// 修改后会变为（左、左）和（下、下），调整执行顺序会在下次循环交给另一方，在下面else if分支执行
+				this->RetreatRobotPath(robots[first_id], first_cmd);
+			}
+			// (right | left | up | down) & others
+			else if (first_cmd_param_2 == 0 || first_cmd_param_2 == 1 ||
+				first_cmd_param_2 == 2 || first_cmd_param_2 == 3)
+			{
+				// 如果first_rbt的指令将在second_rbt之前执行，则应交换指令输出顺序
+				if (first_id < second_id)
+				{
+					// 将second_rbt的指令集插到first_rbt的前面
+					list<vector<Command>>::iterator iter;
+					for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+					{
+						// NOTE 可能会产生越界问题
+						if ((*iter)[0].id == second_id)
+						{
+							break;
+						}
+					}
+					vector<Command> tmp_cmd = (*iter);
+					modify_robot_commands.erase(iter);
+					for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+					{
+						// NOTE 可能会产生越界问题
+						if ((*iter)[0].id == first_id)
+						{
+							break;
+						}
+					}
+					modify_robot_commands.insert(iter, tmp_cmd);
+				}
+			}
+		}
 		// move & stay
+		else if (first_cmd_key == 1 && second_cmd_key != 1)
+		{
+			// 让move的回退，且stay的机器人指令要在move之前执行
+			this->RetreatRobotPath(robots[first_id], first_cmd);
+			if (first_id < second_id)
+			{
+				// 将second_rbt的指令集插到first_rbt的前面
+				list<vector<Command>>::iterator iter;
+				for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+				{
+					// NOTE 可能会产生越界问题
+					if ((*iter)[0].id == second_id)
+					{
+						break;
+					}
+				}
+				vector<Command> tmp_cmd = (*iter);
+				modify_robot_commands.erase(iter);
+				for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+				{
+					// NOTE 可能会产生越界问题
+					if ((*iter)[0].id == first_id)
+					{
+						break;
+					}
+				}
+				modify_robot_commands.insert(iter, tmp_cmd);
+			}
+		}
+	}
+
+	// 将modify_robot_commands赋值给robot_commands
+	int idx = 0;
+	for (auto& cmd : modify_robot_commands)
+	{
+		robot_commands[idx] = cmd;
+		idx++;
 	}
 }
 
@@ -290,46 +362,54 @@ void DetectCollision::CalculateCollisionPoints(vector<Robot>& robots, vector<vec
 			// move
 			if (key == 1)
 			{
-				for (int i = 0; i < 4; i++)
+				// 机器人移动后的坐标
+				int nx = x + dx[param_2], ny = y + dy[param_2];
+
+				// 如果移动后的点存在机器人，则为邻近碰撞点
+				// TODO 对冲情况会加入两次
+				if (now_points.count({ nx, ny }) != 0)
 				{
-					// 机器人移动后的坐标
-					int nx = x + dx[i], ny = y + dy[i];
-
-					// 如果移动后的点存在机器人，则为邻近碰撞点
-					// TODO 对冲情况会加入两次
-					if (now_points.count({ nx, ny }) == 1)
-					{
-						this->adjacent_points[{nx, ny}] = { rbt_idx, now_points[{nx, ny}] };
-					}
-					// 如果移动后的点不存在机器人，则考虑间隔碰撞点情况
-					else
-					{
-						// 加入可能产生间隔碰撞点的情况
-						// 后续筛选机器人个数 > 1的间隔碰撞点
-						this->interval_points[{nx, ny}].push_back(rbt_idx);
-					}
+					this->adjacent_points[{nx, ny}] = { rbt_idx, now_points[{nx, ny}] };
 				}
-			}
-		}
+				// 如果移动后的点不存在机器人，则考虑间隔碰撞点情况
+				else
+				{
+					// 加入可能产生间隔碰撞点的情况
+					// 后续筛选机器人个数 > 1的间隔碰撞点
+					this->interval_points[{nx, ny}].push_back({ rbt_idx, cmd_idx });
+				}
 
-		// 筛选机器人个数 > 1的点，从而得到最终间隔碰撞点
-		map<pair<int, int>, vector<int>>::iterator iter;
-		for (iter = this->interval_points.begin(); iter != this->interval_points.end();)
-		{
-			if (iter->second.size() < 2) // 擦除冲突机器人 < 2的点
-			{
-				this->interval_points.erase(iter++);
 			}
 		}
 	}
-}
 
-void DetectCollision::InitPointsData()
-{
+	// 筛选机器人个数 > 1的点，从而得到最终间隔碰撞点
+	map<pair<int, int>, vector<pair<int, int>> >::iterator iter;
+	for (iter = this->interval_points.begin(); iter != this->interval_points.end();)
+	{
+		if ((*iter).second.size() < 2) // 擦除冲突机器人 < 2的点
+		{
+			this->interval_points.erase(iter++);
+		}
+		else
+		{
+			iter++;
+		}
+	}
+
 }
 
 /**
- * RetreatRobotPath - 机器人路径回退。回退应该取消当前指令，然后增加反向指令。
+ * @brief 初始化各类点数据
+ */
+void DetectCollision::InitPointsData()
+{
+	this->interval_points.clear();
+	this->adjacent_points.clear();
+}
+
+/**
+ * RetreatRobotPath - 机器人路径回退。回退应该取消当前指令，然后增加反向指令。只适用于move机器人。
  * @param robot : 一个机器人
  * @param robot_command : 一条机器人指令
  *
