@@ -146,7 +146,7 @@ vector<vector<Command>> DetectCollision::HandleRobotCollision(vector<Robot>& rob
 	this->HandleIntervalPoints(new_robots, new_robot_commands);
 
 	// 再处理邻近碰撞点
-	this->HandleAdjacentPoints(new_robots, new_robot_commands);
+	//this->HandleAdjacentPoints(new_robots, new_robot_commands);
 
 
 	return new_robot_commands;
@@ -203,9 +203,6 @@ void DetectCollision::HandleIntervalPoints(vector<Robot>& robots, vector<vector<
  */
 void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<Command>>& robot_commands)
 {
-	// 用链表复制一个指令集用以调整
-	list<vector<Command>> modify_robot_commands(robot_commands.begin(), robot_commands.end());
-
 	// 遍历处理邻近碰撞点
 	for (auto& mp : this->adjacent_points)
 	{
@@ -247,7 +244,9 @@ void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<
 		{
 			// (left & right) | (up & down) 对冲：一个回退一个前进，回退要在前进之前执行
 			if ((first_cmd_param_2 == 0 && second_cmd_param_2 == 1) ||
-				(first_cmd_param_2 == 2 && second_cmd_param_2 == 3))
+				(first_cmd_param_2 == 1 && second_cmd_param_2 == 0) ||
+				(first_cmd_param_2 == 2 && second_cmd_param_2 == 3) ||
+				(first_cmd_param_2 == 3 && second_cmd_param_2 == 2))
 			{
 				// 对冲情况mp会记录两次，只需修改一次就可以
 				// 因此只考虑（右、左）和（上、下），不处理（左、右）和（下、上）
@@ -261,27 +260,30 @@ void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<
 				// 如果first_rbt的指令将在second_rbt之前执行，则应交换指令输出顺序
 				if (first_id < second_id)
 				{
-					// 将second_rbt的指令集插到first_rbt的前面
-					list<vector<Command>>::iterator iter;
-					for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+					// 找到second_rbt的指令集
+					int second_itr = 0;
+					for (second_itr = 0; second_itr < robot_commands.size(); second_itr++)
 					{
-						// NOTE 可能会产生越界问题
-						if ((*iter)[0].id == second_id)
+						if (robot_commands[second_itr][0].id == second_id)
 						{
 							break;
 						}
 					}
-					vector<Command> tmp_cmd = (*iter);
-					modify_robot_commands.erase(iter);
-					for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+					// 将second_rbt的指令集暂存
+					vector<Command> tmp_cmd_set = robot_commands[second_itr];
+					// 删除second_rbt的指令集
+					robot_commands.erase(robot_commands.begin() + second_itr);
+					// 找到first_rbt的指令集
+					int first_itr = 0;
+					for (first_itr = 0; first_itr < robot_commands.size(); first_itr++)
 					{
-						// NOTE 可能会产生越界问题
-						if ((*iter)[0].id == first_id)
+						if (robot_commands[first_itr][0].id == first_id)
 						{
 							break;
 						}
 					}
-					modify_robot_commands.insert(iter, tmp_cmd);
+					// 将second_rbt的指令集插入到first_rbt之前
+					robot_commands.insert(robot_commands.begin() + first_itr, tmp_cmd_set);
 				}
 			}
 		}
@@ -292,37 +294,32 @@ void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<
 			this->RetreatRobotPath(robots[first_id], first_cmd);
 			if (first_id < second_id)
 			{
-				// 将second_rbt的指令集插到first_rbt的前面
-				list<vector<Command>>::iterator iter;
-				for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+				// 找到second_rbt的指令集
+				int second_itr = 0;
+				for (second_itr = 0; second_itr < robot_commands.size(); second_itr++)
 				{
-					// NOTE 可能会产生越界问题
-					if ((*iter)[0].id == second_id)
+					if (robot_commands[second_itr][0].id == second_id)
 					{
 						break;
 					}
 				}
-				vector<Command> tmp_cmd = (*iter);
-				modify_robot_commands.erase(iter);
-				for (iter = modify_robot_commands.begin(); iter != modify_robot_commands.end(); ++iter)
+				// 将second_rbt的指令集暂存
+				vector<Command> tmp_cmd_set = robot_commands[second_itr];
+				// 删除second_rbt的指令集
+				robot_commands.erase(robot_commands.begin() + second_itr);
+				// 找到first_rbt的指令集
+				int first_itr = 0;
+				for (first_itr = 0; first_itr < robot_commands.size(); first_itr++)
 				{
-					// NOTE 可能会产生越界问题
-					if ((*iter)[0].id == first_id)
+					if (robot_commands[first_itr][0].id == first_id)
 					{
 						break;
 					}
 				}
-				modify_robot_commands.insert(iter, tmp_cmd);
+				// 将second_rbt的指令集插入到first_rbt之前
+				robot_commands.insert(robot_commands.begin() + first_itr, tmp_cmd_set);
 			}
 		}
-	}
-
-	// 将modify_robot_commands赋值给robot_commands
-	int idx = 0;
-	for (auto& cmd : modify_robot_commands)
-	{
-		robot_commands[idx] = cmd;
-		idx++;
 	}
 }
 
