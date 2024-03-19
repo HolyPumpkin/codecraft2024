@@ -68,9 +68,10 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
 		// 每次规划路径的时候都要把游标置零
 		bot.fetch_good_path = planpath.pathplanning(s, e);
 		bot.fetch_good_cur = 0;
-		// 路径规划失败，可能是死路
+		// 路径规划失败，可能是死路，这时候要把这个货物去掉，以免后续无效搜索
 		if (bot.fetch_good_path.empty())
 		{
+			i.is_assigned = true;
 			return -1;
 		}
 		// 被指派成功要修改内部变量，记录该货物结束时间，机器人当前价值
@@ -121,9 +122,12 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 		}
 	}
 	//规划送物路径并存入机器人结构体
+	//泊位是4*4的，去任意一个点都行，所以就去随机的一个点
+	int target_x = berths[min_id].x + rand() % 4;
+	int target_y = berths[min_id].y + rand() % 4;
 	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 	Point s = Point(bot.x, bot.y);
-	Point e = Point(berths[min_id].x, berths[min_id].y);
+	Point e = Point(target_x, target_y);
 	// 每次规划路径的时候都要把游标置零
 	bot.send_good_path = planpath.pathplanning(s, e);
 	bot.send_good_cur = 0;
