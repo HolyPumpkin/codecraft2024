@@ -48,44 +48,92 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
 	{
 		return -1;
 	}
-	//当前策略是，发现一个可达货物就去，不看距离
-	for (auto& i : goods)
-	{
-		//已经被指派给一个机器人
-		if (i.is_assigned)
-		{
-			continue;
-		}
-		//不可达，即货物在机器人到之前就消失
-		if ((abs(i.x - bot.x) + abs(i.y - bot.y)) >= i.end_frame - cur_frame_id)
-		{
-			continue;
-		}
-		//找到一个可达且没被指派的货物
-		PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
-		Point s = Point(bot.x, bot.y);
-		Point e = Point(i.x, i.y);
-		// 每次规划路径的时候都要把游标置零
-		bot.fetch_good_path = planpath.pathplanning(s, e);
-		bot.fetch_good_cur = 0;
-		// 路径规划失败，可能是死路，这时候要把这个货物去掉，以免后续无效搜索
-		if (bot.fetch_good_path.empty())
-		{
-			i.is_assigned = true;
-			return -1;
-		}
-		// 被指派成功要修改内部变量，记录该货物结束时间，机器人当前价值
-		i.is_assigned = true;
-		bot.good_end_frame = i.end_frame;
-		bot.robot_val = i.val;
-		// 测试路径规划
-		/*cout << " robot (" << bot.x << "," << bot.y << ")'s fetch_path: " << endl;
-		planpath.printPath(bot.fetch_good_path);*/
 
-		return 0;
+	// 取第一个货物作为基准
+	Good* min_dist_gd;
+	min_dist_gd = &goods.front();
+	int min_dist = abs(min_dist_gd->x - bot.x) + abs(min_dist_gd->y - bot.y);
+
+	// 遍历所有货物，取曼哈顿距离最小的
+	for (auto& gd : goods)
+	{
+		if (gd.is_assigned)
+		{
+			continue;
+		}
+		int dist = abs(gd.x - bot.x) + abs(gd.y - bot.y);
+		if (dist >= (gd.end_frame - cur_frame_id))
+		{
+			continue;
+		}
+		if (min_dist > dist)
+		{
+			min_dist_gd = &gd;
+			min_dist = dist;
+		}
 	}
-	//如果未在循环内return则表示没有合适的good指派，失败
-	return -1;
+
+	// 找到一个可达且没被指派的货物
+	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
+	Point s = Point(bot.x, bot.y);
+	Point e = Point(min_dist_gd->x, min_dist_gd->y);
+
+	// 每次规划路径的时候都要把游标置零
+	bot.fetch_good_path = planpath.pathplanning(s, e);
+	bot.fetch_good_cur = 0;
+
+	// 路径规划失败，可能是死路，这时候要把这个货物去掉，以免后续无效搜索
+	if (bot.fetch_good_path.empty())
+	{
+		min_dist_gd->is_assigned = true;
+		return -1;
+	}
+
+	// 被指派成功要修改内部变量，记录该货物结束时间，机器人当前价值
+	min_dist_gd->is_assigned = true;
+	bot.good_end_frame = min_dist_gd->end_frame;
+	bot.robot_val = min_dist_gd->val;
+
+	return 0;
+	
+	//// 原策略是，发现一个可达货物就去，不看距离
+	//for (auto& i : goods)
+	//{
+	//	//已经被指派给一个机器人
+	//	if (i.is_assigned)
+	//	{
+	//		continue;
+	//	}
+	//	//不可达，即货物在机器人到之前就消失
+	//	if ((abs(i.x - bot.x) + abs(i.y - bot.y)) >= i.end_frame - cur_frame_id)
+	//	{
+	//		continue;
+	//	}
+	//	//找到一个可达且没被指派的货物
+	//	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
+	//	Point s = Point(bot.x, bot.y);
+	//	Point e = Point(i.x, i.y);
+	//	// 每次规划路径的时候都要把游标置零
+	//	bot.fetch_good_path = planpath.pathplanning(s, e);
+	//	bot.fetch_good_cur = 0;
+	//	// 路径规划失败，可能是死路，这时候要把这个货物去掉，以免后续无效搜索
+	//	if (bot.fetch_good_path.empty())
+	//	{
+	//		i.is_assigned = true;
+	//		return -1;
+	//	}
+	//	// 被指派成功要修改内部变量，记录该货物结束时间，机器人当前价值
+	//	i.is_assigned = true;
+	//	bot.good_end_frame = i.end_frame;
+	//	bot.robot_val = i.val;
+	//	// 测试路径规划
+	//	/*cout << " robot (" << bot.x << "," << bot.y << ")'s fetch_path: " << endl;
+	//	planpath.printPath(bot.fetch_good_path);*/
+
+	//	return 0;
+	//}
+	////如果未在循环内return则表示没有合适的good指派，失败
+	//return -1;
 }
 
 /**
