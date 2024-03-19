@@ -38,13 +38,6 @@ vector<vector<Command>> boat_cmd(boat_num);
 /***********************************************************************/
 int main()
 {
-	//时间测试的样例
-	std::ofstream outputFile("test.txt");	//测试
-	
-	//需要测试的代码位置
-	
-	
-	
 	// 总初始化
 	IOProcessor iop(n, berth_num, boat_num, robot_num);
 
@@ -76,21 +69,18 @@ int main()
 
 		// 每一帧来对机器人重启（如果有必要）
 		mkd.rebootRobots(robots);
-		auto start = std::chrono::steady_clock::now();
+
 		// 机器人操作，指令存在robot_cmd
 		mkd.robotsOperate(robots, robot_num, robot_cmd, goods, berths, frame_id);
-		auto end = std::chrono::steady_clock::now();
-		auto duration_ms = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-		outputFile << "time:" << duration_ms << "us" << std::endl;
+
 		//机器人碰撞检测
-		dtc.ClearRobotCollision(robots, robot_cmd);
+		vector<vector<Command>> modify_robot_cmd = dtc.HandleRobotCollision(robots, robot_cmd);
 
 		//轮船操作，指令存在boat_cmd
 		mkd.boatsOperate(boats, boat_cmd, berths, boat_num, frame_id);
 
 		//输出指令
-		iop.OutputCommand(robot_cmd, boat_cmd);
+		iop.OutputCommand(modify_robot_cmd, boat_cmd);
 	}
-	outputFile.close();
 	return 0;
 }
