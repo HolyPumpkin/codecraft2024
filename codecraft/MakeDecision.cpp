@@ -83,7 +83,11 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 			min_dist = dist;
 		}
 	}
-
+	//如果最后找到的已经被指派，则返回-1
+	if (min_dist_gd->is_assigned)
+	{
+		return -1;
+	}
 	// 找到一个可达且没被指派的货物
 	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 	Point s = Point(bot.x, bot.y);
