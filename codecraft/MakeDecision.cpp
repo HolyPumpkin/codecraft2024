@@ -75,6 +75,13 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 			min_dist_gd = &gd;
 			min_dist = dist;
 		}
+
+		//如果初始选的最小距离货物已经被指派，则切换
+		if (min_dist_gd->is_assigned)
+		{
+			min_dist_gd = &gd;
+			min_dist = dist;
+		}
 	}
 
 	// 找到一个可达且没被指派的货物
