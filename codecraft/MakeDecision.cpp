@@ -41,7 +41,7 @@ MakeDecision::MakeDecision(vector<vector<char>>& _maze, int _N, int _n)
    * 注意事项/约束条件：
    * 指派失败的情况可能有多种，后续完善
    */
-int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id)
+int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, int cur_frame_id)
 {
 	//无货物
 	if (goods.empty())
@@ -58,6 +58,10 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
 	for (auto& gd : goods)
 	{
 		if (gd.is_assigned)
+		{
+			continue;
+		}
+		if (gd.is_ungettable[robot_id])
 		{
 			continue;
 		}
@@ -82,10 +86,10 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
 	bot.fetch_good_path = planpath.pathplanning(s, e);
 	bot.fetch_good_cur = 0;
 
-	// 路径规划失败，可能是死路，这时候要把这个货物去掉，以免后续无效搜索
+	// 路径规划失败，可能是死路，这时候要把这个货物设为对该机器人不可达
 	if (bot.fetch_good_path.empty())
 	{
-		min_dist_gd->is_assigned = true;
+		min_dist_gd->is_ungettable[robot_id] = true;
 		return -1;
 	}
 
@@ -848,7 +852,7 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 				{
 					robots[rbt_idx].is_assigned = 0;
 					// 先指派机器人去拿货物
-					int assign_success = this->assignRobotGet(robots[rbt_idx], goods, frame_id);
+					int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id);
 
 					// 如果指派失败，插入空指令，表示不做任何操作
 					if (-1 == assign_success)
@@ -868,7 +872,7 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 			else if (0 == robots[rbt_idx].is_assigned)
 			{
 				// 先指派机器人去拿货物
-				int assign_success = this->assignRobotGet(robots[rbt_idx], goods, frame_id);
+				int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id);
 
 				// 如果指派失败，插入空指令，表示不做任何操作
 				if (-1 == assign_success)

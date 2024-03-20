@@ -278,6 +278,9 @@ struct Good
 	//是否已被指派给某机器人
 	bool is_assigned;
 
+	//是否对某个机器人不可达
+	bool is_ungettable[10];
+
 	Good() 
 	{
 		this->x = 0;
@@ -287,8 +290,17 @@ struct Good
 		this->is_assigned = false;
 		this->start_frame = 0;
 		this->end_frame = 0;
+		for (int i = 0; i < 10; ++i)
+		{
+			this->is_ungettable[i] = false;
+		}
 	}
 
 	// 构造函数（每个物品生命周期为1000帧）
-	Good(int _x, int _y, int _val, int frame_id) : x(_x), y(_y), val(_val), ttl(1000), start_frame(frame_id), end_frame(frame_id + 1000), is_assigned(false) {};
+	Good(int _x, int _y, int _val, int frame_id) : x(_x), y(_y), val(_val), ttl(1000), start_frame(frame_id), end_frame(frame_id + 1000), is_assigned(false) {
+		for (int i = 0; i < 10; ++i)
+		{
+			this->is_ungettable[i] = false;
+		}
+	};
 };
