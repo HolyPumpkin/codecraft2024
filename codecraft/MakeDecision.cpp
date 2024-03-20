@@ -243,6 +243,7 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 	int temp = 0;
 	for (int i = 0; i < berths.size(); ++i)
 	{
+		//当前泊位不可达
 		if (bot.is_ungettable[berths[i].id] == 0)
 		{
 			continue;
