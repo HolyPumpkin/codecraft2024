@@ -146,7 +146,7 @@ vector<vector<Command>> DetectCollision::HandleRobotCollision(vector<Robot>& rob
 	this->HandleIntervalPoints(new_robots, new_robot_commands);
 
 	// 再处理邻近碰撞点
-	//this->HandleAdjacentPoints(new_robots, new_robot_commands);
+	// this->HandleAdjacentPoints(new_robots, new_robot_commands);
 
 
 	return new_robot_commands;
@@ -251,7 +251,15 @@ void DetectCollision::HandleAdjacentPoints(vector<Robot>& robots, vector<vector<
 				// 对冲情况mp会记录两次，只需修改一次就可以
 				// 因此只考虑（右、左）和（上、下），不处理（左、右）和（下、上）
 				// 修改后会变为（左、左）和（下、下），调整执行顺序会在下次循环交给另一方，在下面else if分支执行
-				this->RetreatRobotPath(robots[first_id], first_cmd);
+				// 设置一个回退优先级（序号大的回退），防止map的自动排序问题。
+				if (first_id > second_id)
+				{
+					this->RetreatRobotPath(robots[first_id], first_cmd);
+				}
+				else
+				{
+					this->RetreatRobotPath(robots[second_id], second_cmd);
+				}
 			}
 			// (right | left | up | down) & others
 			else if (first_cmd_param_2 == 0 || first_cmd_param_2 == 1 ||
