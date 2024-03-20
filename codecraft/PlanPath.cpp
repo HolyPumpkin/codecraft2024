@@ -166,6 +166,7 @@ vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
     list<Point*> openlist;   //基本实现，查找与修改为O(N)
     vector<vector<int>> visited(N, vector<int>(N, 0));    //节点已访问关系,针对closedlist
 
+    int success = 0;
     //起点初始化
     start.G = 0;
     start.H = getDis(start, end);
@@ -187,6 +188,7 @@ vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
         //循环终止条件，找到终点
         if (*current == end)
         {
+            success = 1;
             //cout << "退出循环，找到了终点,current.parent:" << current->parent->x << "," << current->parent->y << endl;
             break;
         }
@@ -258,6 +260,10 @@ vector<pair<int, int>> PlanPath::pathplanning(Point& start, Point& end)
     }
     //根据结果点追溯路径
     vector<pair<int, int>> path;
+    if (success == 0)
+    {
+        return path;
+    }
     Point* p = current;
     while (p != nullptr)
     {
