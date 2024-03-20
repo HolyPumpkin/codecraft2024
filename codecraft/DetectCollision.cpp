@@ -146,7 +146,7 @@ vector<vector<Command>> DetectCollision::HandleRobotCollision(vector<Robot>& rob
 	this->HandleIntervalPoints(new_robots, new_robot_commands);
 
 	// 再处理邻近碰撞点
-	// this->HandleAdjacentPoints(new_robots, new_robot_commands);
+	this->HandleAdjacentPoints(new_robots, new_robot_commands);
 
 
 	return new_robot_commands;
