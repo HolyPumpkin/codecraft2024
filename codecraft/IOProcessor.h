@@ -31,7 +31,7 @@ public:
 	void OutputMap(vector<vector<char>>& map);
 
 	// 读取初始化数据
-	void InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats);
+	void InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats, vector<Robot>& robots);
 
 	// 读取每一帧的输入
 	int InputFrameData(int& frame_id, int& money, list<Good>& goods, vector<Robot>& robots, vector<Boat>& boats);

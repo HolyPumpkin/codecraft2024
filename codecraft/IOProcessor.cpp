@@ -71,9 +71,15 @@ void IOProcessor::OutputMap(vector<vector<char>>& map)
  * @return : null
  * @note : none
  */
-void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats)
+void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vector<Boat>& boats, vector<Robot>& robots)
 {
 	// int map_size = map.size(), berth_size = berths.size(), boat_size = boats.size();
+
+	// 初始化机器人ID
+	for (int i = 0; i < robots.size(); i++)
+	{
+		robots[i].id = i;
+	}
 
 	// 读取地图
 	//string line;
@@ -93,6 +99,8 @@ void IOProcessor::InitData(vector<vector<char>>& map, vector<Berth>& berths, vec
 	{
 		int berth_id;
 		scanf("%d", &berth_id);
+		berths[berth_id].id = berth_id;
+
 		scanf("%d%d%d%d", &berths[berth_id].x, &berths[berth_id].y, &berths[berth_id].transport_time, &berths[berth_id].loading_speed);
 		berths[berth_id].rdx = berths[berth_id].x + berths[berth_id].r_size - 1;
 		berths[berth_id].rdy = berths[berth_id].y + berths[berth_id].c_size - 1;

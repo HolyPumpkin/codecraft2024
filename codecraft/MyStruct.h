@@ -127,6 +127,9 @@ struct Boat
 
 struct Berth
 {
+	// 泊口的id
+	int id;
+
 	// 左上角坐标
 	int x, y;
 
@@ -152,8 +155,12 @@ struct Berth
 	// 0为未被占用，1为被占用
 	int is_occupied;
 
+	// 用来存储锁定当前泊口的机器人
+	vector<int> rbt_seq;
+
 	Berth() 
 	{
+		this->id = 0;
 		this->x = 0;
 		this->y = 0;
 		this->r_size = 4;
@@ -184,6 +191,9 @@ struct Berth
 
 struct Robot
 {
+	// 机器人id
+	int id;
+
 	// 坐标
 	int x, y;
 
@@ -214,7 +224,7 @@ struct Robot
 	// 取物路径下标，送物路径下标
 	int fetch_good_cur, send_good_cur;
 
-	// 当前要去的泊位id
+	// 当前要去的泊位id。初始化为-1，代表还未设置泊口。
 	int berth_id;
 
 	// 机器人当前价值，即所携带货物的价值

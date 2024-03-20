@@ -41,7 +41,7 @@ int main()
 	// ×Ü³õÊ¼»¯
 	IOProcessor iop(n, berth_num, boat_num, robot_num);
 
-	iop.InitData(ch_map, berths, boats);
+	iop.InitData(ch_map, berths, boats, robots);
 
 	MakeDecision mkd(ch_map, N, n);
 	

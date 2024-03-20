@@ -151,6 +151,83 @@ int MakeDecision::assignRobotGet(Robot& bot, list<Good>& goods, int cur_frame_id
    */
 int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 {
+	//// 无泊位
+	//if (berths.empty())
+	//{
+	//	return -1;
+	//}
+
+	//// 如果机器人已经被分配给某个泊口，则直接路径规划
+	//if (bot.berth_id != -1)
+	//{
+	//	// 泊位是4*4的，去任意一个点都行，所以就去随机的一个点
+	//	int target_x = berths[bot.berth_id].x + rand() % 4;
+	//	int target_y = berths[bot.berth_id].y + rand() % 4;
+	//	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
+	//	Point s = Point(bot.x, bot.y);
+	//	Point e = Point(target_x, target_y);
+
+	//	// 每次规划路径的时候都要把游标置零
+	//	bot.send_good_path = planpath.pathplanning(s, e);
+	//	bot.send_good_cur = 0;
+
+	//	// 路径规划出错
+	//	if (bot.send_good_path.empty())
+	//	{
+	//		return -1;
+	//	}
+
+	//	return 0;
+	//}
+
+	//// 如果机器人未被分配给某个泊口，则开始挑泊口
+
+	//// 遍历泊口
+	//for (auto& bth : berths)
+	//{
+	//	// 如果当前泊口锁定机器人个数 < 2，则有空闲可尝试分配
+	//	if (bth.rbt_seq.size() < 2)
+	//	{
+	//		// 泊位是4*4的，去任意一个点都行，所以就去随机的一个点
+	//		int target_x = berths[bot.berth_id].x + rand() % 4;
+	//		int target_y = berths[bot.berth_id].y + rand() % 4;
+	//		PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
+	//		Point s = Point(bot.x, bot.y);
+	//		Point e = Point(target_x, target_y);
+
+	//		// 每次规划路径的时候都要把游标置零
+	//		bot.send_good_path = planpath.pathplanning(s, e);
+	//		bot.send_good_cur = 0;
+
+	//		// 路径规划失败，可能是泊口不可达
+	//		if (bot.send_good_path.empty())
+	//		{
+	//			
+	//		}
+	//		// 路径规划成功，证明泊口可达
+	//		else
+	//		{
+	//			// 修改机器人泊口
+	//			bot.berth_id = bth.id;
+	//			// 泊口加入该机器人ID
+	//			bth.rbt_seq.push_back(bot.id);
+	//		}
+	//	}
+	//	else
+	//	{
+
+	//	}
+	//}
+
+
+
+
+
+
+
+
+	 // 原版本=================================================================
+	 
 	//无泊位
 	if (berths.empty())
 	{
