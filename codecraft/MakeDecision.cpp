@@ -243,11 +243,21 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 	int temp = 0;
 	for (int i = 0; i < berths.size(); ++i)
 	{
+		if (bot.is_ungettable[berths[i].id] == 0)
+		{
+			continue;
+		}
 		temp = abs(berths[i].x - bot.x) + abs(berths[i].y - bot.y);
 		if (temp < min_dis)
 		{
 			min_dis = temp;
 			min_id = i;
+		}
+		// 当前离得最近的这个泊位不可达，就要改变泊位
+		if (bot.is_ungettable[berths[min_id].id] == 0)
+		{
+			min_id = i;
+			min_dis = temp;
 		}
 	}
 	//规划送物路径并存入机器人结构体
@@ -259,6 +269,12 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 	Point e = Point(target_x, target_y);
 	// 每次规划路径的时候都要把游标置零
 	bot.send_good_path = planpath.pathplanning(s, e);
+	//如果规划的路径不可达，要设置一下，以免机器人下次还去这个泊位
+	if (bot.send_good_path.empty())
+	{
+		bot.is_ungettable[berths[min_id].id] = 0;
+		return -1;
+	}
 	bot.send_good_cur = 0;
 	bot.berth_id = min_id;
 	return 0;
@@ -898,7 +914,7 @@ void MakeDecision::vanishGoods(list<Good>& goods, int frame_id)
  * @param berths 
  * @param frame_id 
 */
-void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<vector<Command>>& robot_cmd,list<Good>& goods, vector<Berth>& berths, int frame_id)
+void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<vector<Command>>& robot_cmd, list<Good>& goods, vector<Berth>& berths, int frame_id)
 {
 	for (int rbt_idx = 0; rbt_idx < robot_num; ++rbt_idx)
 	{

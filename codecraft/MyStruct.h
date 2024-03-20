@@ -236,6 +236,9 @@ struct Robot
 	// 送物路径
 	vector<pair<int, int>> send_good_path;
 
+	// 是否不可达某个泊位，1表示可达，0表示不可达
+	vector<int> is_ungettable;
+
 	Robot() 
 	{
 		this->x = 0;
@@ -250,6 +253,10 @@ struct Robot
 		this->berth_id = 0;
 		this->robot_val = 0;
 		this->last_status = 1;	//初始是正常状态
+		for (int i = 0; i < 10; ++i)
+		{
+			this->is_ungettable.push_back(1);
+		}
 	}
 
 	Robot(int x, int y) {
@@ -265,6 +272,10 @@ struct Robot
 		this->berth_id = 0;
 		this->robot_val = 0;
 		this->last_status = 1;	//初始是正常状态
+		for (int i = 0; i < 10; ++i)
+		{
+			this->is_ungettable.push_back(1);
+		}
 	}
 };
 
