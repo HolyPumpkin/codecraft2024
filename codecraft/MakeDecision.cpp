@@ -479,7 +479,6 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 				berths[boat.pos].cur_goods_num -= temp_sum;
 			}
 			// 如果当前泊位装完了，但是轮船没满
-			
 			else if (berths[boat.pos].cur_goods_num <= 0 && boat.cur_load < boat.capacity - loss)
 			{
 				for (auto& berth : berths)
