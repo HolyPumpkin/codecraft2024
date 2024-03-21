@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>E:\BaiduSyncdisk\西电研究生\研1\2024华为软件精英挑战赛\新资料\WindowsReleasev1.1.part01\WindowsReleasev1.1</OutDir>
+    <OutDir>E:\BaiduSyncdisk\西电研究生\研1\2024华为软件精英挑战赛\新资料\WindowsReleasev1.1</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>E:\BaiduSyncdisk\西电研究生\研1\2024华为软件精英挑战赛\新资料\WindowsReleasev1.1.part01\WindowsReleasev1.1</OutDir>
+    <OutDir>E:\BaiduSyncdisk\西电研究生\研1\2024华为软件精英挑战赛\新资料\WindowsReleasev1.1</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

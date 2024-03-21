@@ -109,6 +109,9 @@ struct Boat
 	// 是否正在装货
 	bool is_loading;
 
+	// 泊位id，表明这艘轮船要去的泊位
+	int berth_id;
+
 	Boat()
 	{
 		this->capacity = 0;
@@ -118,11 +121,12 @@ struct Boat
 		this->is_loading = false;
 		this->start_load_frame = 0;
 		this->end_load_frame = 0;
-		this->loading_time = 1000;
+		this->loading_time = 0;
 		this->last_status = 0;
+		this->berth_id = 0;
 	}
 
-	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(0), start_load_frame(0), end_load_frame(0), loading_time(1000), is_loading(false), last_status(0){};
+	Boat(int _capacity, int pos, int _pos) : capacity(_capacity), cur_load(0), pos(_pos), status(0), start_load_frame(0), end_load_frame(0), loading_time(0), is_loading(false), last_status(0), berth_id(0){};
 };
 
 struct Berth
@@ -250,7 +254,7 @@ struct Robot
 		this->is_assigned = 0;
 		this->last_is_carry = 1;
 		this->good_end_frame = -1;
-		this->berth_id = 0;
+		this->berth_id = -1;
 		this->robot_val = 0;
 		this->last_status = 1;	//初始是正常状态
 		for (int i = 0; i < 10; ++i)
@@ -269,7 +273,7 @@ struct Robot
 		this->is_assigned = 0;
 		this->last_is_carry = 1;
 		this->good_end_frame = -1;
-		this->berth_id = 0;
+		this->berth_id = -1;
 		this->robot_val = 0;
 		this->last_status = 1;	//初始是正常状态
 		for (int i = 0; i < 10; ++i)

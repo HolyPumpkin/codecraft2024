@@ -66,6 +66,9 @@ public:
 	// 轮船最后一舞，生成去虚拟点的指令
 	Command lastDance(int boat_id);
 
+	// 选择可用泊位，目前根据机器人可达性选取
+	void chooseBerths(vector<Berth>& berths, vector<Robot>& robots, int frame_id);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小

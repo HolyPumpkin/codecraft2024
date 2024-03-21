@@ -166,130 +166,84 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
    */
 int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 {
-	//// 无泊位
-	//if (berths.empty())
-	//{
-	//	return -1;
-	//}
-
-	//// 如果机器人已经被分配给某个泊口，则直接路径规划
-	//if (bot.berth_id != -1)
-	//{
-	//	// 泊位是4*4的，去任意一个点都行，所以就去随机的一个点
-	//	int target_x = berths[bot.berth_id].x + rand() % 4;
-	//	int target_y = berths[bot.berth_id].y + rand() % 4;
-	//	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
-	//	Point s = Point(bot.x, bot.y);
-	//	Point e = Point(target_x, target_y);
-
-	//	// 每次规划路径的时候都要把游标置零
-	//	bot.send_good_path = planpath.pathplanning(s, e);
-	//	bot.send_good_cur = 0;
-
-	//	// 路径规划出错
-	//	if (bot.send_good_path.empty())
-	//	{
-	//		return -1;
-	//	}
-
-	//	return 0;
-	//}
-
-	//// 如果机器人未被分配给某个泊口，则开始挑泊口
-
-	//// 遍历泊口
-	//for (auto& bth : berths)
-	//{
-	//	// 如果当前泊口锁定机器人个数 < 2，则有空闲可尝试分配
-	//	if (bth.rbt_seq.size() < 2)
-	//	{
-	//		// 泊位是4*4的，去任意一个点都行，所以就去随机的一个点
-	//		int target_x = berths[bot.berth_id].x + rand() % 4;
-	//		int target_y = berths[bot.berth_id].y + rand() % 4;
-	//		PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
-	//		Point s = Point(bot.x, bot.y);
-	//		Point e = Point(target_x, target_y);
-
-	//		// 每次规划路径的时候都要把游标置零
-	//		bot.send_good_path = planpath.pathplanning(s, e);
-	//		bot.send_good_cur = 0;
-
-	//		// 路径规划失败，可能是泊口不可达
-	//		if (bot.send_good_path.empty())
-	//		{
-	//			
-	//		}
-	//		// 路径规划成功，证明泊口可达
-	//		else
-	//		{
-	//			// 修改机器人泊口
-	//			bot.berth_id = bth.id;
-	//			// 泊口加入该机器人ID
-	//			bth.rbt_seq.push_back(bot.id);
-	//		}
-	//	}
-	//	else
-	//	{
-
-	//	}
-	//}
-
-
-
-
-
-
-
-
-	 // 原版本=================================================================
-	 
-	//无泊位
+	// 如果机器人未分配，其berth_id为-1，可能有越界问题
+	// 如果berth_id为-1，表示是个死机器人，就输出一个空指令
+	if (bot.berth_id <= -1)
+	{
+		return -1;
+	}
+	// 无泊位
 	if (berths.empty())
 	{
 		return -1;
 	}
-	//泊位可以容纳多个机器人，直接挑一个最近的
-	int min_dis = INT_MAX;
-	int min_id = 0;	//默认去0
-	int temp = 0;
-	for (int i = 0; i < berths.size(); ++i)
-	{
-		//当前泊位不可达
-		if (bot.is_ungettable[berths[i].id] == 0)
-		{
-			continue;
-		}
-		temp = abs(berths[i].x - bot.x) + abs(berths[i].y - bot.y);
-		if (temp < min_dis)
-		{
-			min_dis = temp;
-			min_id = i;
-		}
-		// 当前离得最近的这个泊位不可达，就要改变泊位
-		if (bot.is_ungettable[berths[min_id].id] == 0)
-		{
-			min_id = i;
-			min_dis = temp;
-		}
-	}
-	//规划送物路径并存入机器人结构体
-	//泊位是4*4的，去任意一个点都行，所以就去随机的一个点
-	int target_x = berths[min_id].x + rand() % 4;
-	int target_y = berths[min_id].y + rand() % 4;
+	// 直接规划去分配好的泊位
+	int target_x = berths[bot.berth_id].x + rand() % 4;
+	int target_y = berths[bot.berth_id].y + rand() % 4;
 	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 	Point s = Point(bot.x, bot.y);
 	Point e = Point(target_x, target_y);
 	// 每次规划路径的时候都要把游标置零
 	bot.send_good_path = planpath.pathplanning(s, e);
-	//如果规划的路径不可达，要设置一下，以免机器人下次还去这个泊位
+	bot.send_good_cur = 0;
+	// 如果不可达
 	if (bot.send_good_path.empty())
 	{
-		bot.is_ungettable[berths[min_id].id] = 0;
+		bot.is_ungettable[bot.berth_id] = 0;
 		return -1;
 	}
-	bot.send_good_cur = 0;
-	bot.berth_id = min_id;
 	return 0;
+
+
+	 // 原版本=================================================================
+	 
+	//无泊位
+	//if (berths.empty())
+	//{
+	//	return -1;
+	//}
+	////泊位可以容纳多个机器人，直接挑一个最近的
+	//int min_dis = INT_MAX;
+	//int min_id = 0;	//默认去0
+	//int temp = 0;
+	//for (int i = 0; i < berths.size(); ++i)
+	//{
+	//	//当前泊位不可达
+	//	if (bot.is_ungettable[berths[i].id] == 0)
+	//	{
+	//		continue;
+	//	}
+	//	temp = abs(berths[i].x - bot.x) + abs(berths[i].y - bot.y);
+	//	if (temp < min_dis)
+	//	{
+	//		min_dis = temp;
+	//		min_id = i;
+	//	}
+	//	// 当前离得最近的这个泊位不可达，就要改变泊位
+	//	if (bot.is_ungettable[berths[min_id].id] == 0)
+	//	{
+	//		min_id = i;
+	//		min_dis = temp;
+	//	}
+	//}
+	////规划送物路径并存入机器人结构体
+	////泊位是4*4的，去任意一个点都行，所以就去随机的一个点
+	//int target_x = berths[min_id].x + rand() % 4;
+	//int target_y = berths[min_id].y + rand() % 4;
+	//PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
+	//Point s = Point(bot.x, bot.y);
+	//Point e = Point(target_x, target_y);
+	//// 每次规划路径的时候都要把游标置零
+	//bot.send_good_path = planpath.pathplanning(s, e);
+	////如果规划的路径不可达，要设置一下，以免机器人下次还去这个泊位
+	//if (bot.send_good_path.empty())
+	//{
+	//	bot.is_ungettable[berths[min_id].id] = 0;
+	//	return -1;
+	//}
+	//bot.send_good_cur = 0;
+	//bot.berth_id = min_id;
+	//return 0;
 }
 
 
@@ -446,11 +400,44 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	//初始化轮船位置
 	if (frame_id == 1)
 	{
-		res.push_back(Command(8, boat_id, boat_id));	//ship指令
+		//找到一个对应的泊位
+		int init_berth_id = -1;
+		for (int i = 0; i < berths.size(); ++i)
+		{
+			// 在已经分配好的泊位中挑货物最多的
+			if (berths[i].is_occupied == 0 && berths[i].rbt_seq.size() > 0)
+			{
+				// 机器人放货物的时候要改变对应泊位的货物价值和货物量
+				init_berth_id = i;
+				break;
+			}
+		}
+		if (init_berth_id == -1)
+		{
+			for (int i = 0; i < berths.size(); ++i)
+			{
+				// 在已经分配好的泊位中挑货物最多的
+				// todo不是均匀分配
+				if (berths[i].rbt_seq.size() > 0)
+				{
+					// 机器人放货物的时候要改变对应泊位的货物价值和货物量
+					init_berth_id = i;
+					break;
+				}
+			}
+		}
+		// 如果再分配还是没有泊位，那就去0号泊位
+		if (init_berth_id == -1)
+		{
+			init_berth_id = 0;
+		}
+		res.push_back(Command(8, boat_id, init_berth_id));	//ship指令
 		//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
-		berths[boat_id].is_occupied = 1;
+		boat.berth_id = init_berth_id;
+		berths[init_berth_id].is_occupied = 1;
 		return res;
 	}
+
 	//如果剩余时间不够了，就让轮船进行最后一舞！
 	if(boat.pos != -1)
 	{
@@ -466,66 +453,127 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	int cur_status = this->boatStatusCheck(boat);
 	
 	//如果在运输中，或者在装货中，就保持不动
-	if (0 == boat.status || boat.is_loading)
+	if (0 == boat.status)
 	{
 		res.push_back(Command(-1, boat_id, -1));	//空指令
 		return res;
 	}
+	//如果轮船正在装货
+	if (boat.is_loading)
+	{
+		// todo loading_time可能不准
+		boat.loading_time++;
+		// 如果轮船在某个泊位装货
+		if (boat.pos > -1)
+		{
+			// todo按轮船capacity的百分比或者机器人运力计算，泊位间移动是500帧，需要保证能多500帧的货物
+			// 调参
+			int loss = 10;	//500帧会损失的货物，需要大于这个才去
+			int temp_goods_num = berths[boat.pos].cur_goods_num;
+			int temp_loading_speed = berths[boat.pos].loading_speed;
+			// 如果当前泊位有货，则装货并维护信息
+			if (berths[boat.pos].cur_goods_num > 0)
+			{
+				int temp_sum = (temp_goods_num > temp_loading_speed) ? temp_loading_speed : temp_goods_num;
+				boat.cur_load += temp_sum;
+				berths[boat.pos].cur_goods_num -= temp_sum;
+			}
+			// 如果当前泊位装完了，但是轮船没满
+			
+			else if (berths[boat.pos].cur_goods_num <= 0 && boat.cur_load < boat.capacity - loss)
+			{
+				for (auto& berth : berths)
+				{
+					if (berth.is_occupied == 0 && berth.cur_goods_num > loss)
+					{
+						berth.is_occupied = 1;
+						berths[boat.pos].is_occupied = 0;
+						boat.is_loading = false;
+						res.push_back(Command(8, boat_id, berth.id));
+						return res;
+					}
+				}
+			}
+
+		}
+		//res.push_back(Command(-1, boat_id, -1));	//空指令
+		//return res;
+	}
+
 	//状态未改变
 	if (cur_status == -1)
 	{
 		if (boat.status == 1)
 		{
-			//如果到了装货结束的时间，去虚拟点
-			if (frame_id >= boat.end_load_frame)
+			// todo如果轮船装满了，再去虚拟点
+			if (boat.cur_load >= boat.capacity)
 			{
 				res.push_back(Command(16, boat_id, -1));	//go指令
 				//离开泊位去虚拟点，需要改变泊位状态为未被占用
 				if (boat.pos != -1)
 				{
 					berths[boat.pos].is_occupied = 0;
-
-					//轮船离开要更新泊位货物数量
-					int temp_value = berths[boat.pos].cur_goods_num - berths[boat.pos].loading_speed * boat.loading_time;
-					berths[boat.pos].cur_goods_num = (temp_value > 0) ? temp_value : 0;
 				}
 				boat.is_loading = false;
+				boat.loading_time = 0;
 			}
+
+			//原逻辑
+			////如果到了装货结束的时间，去虚拟点
+			//if (frame_id >= boat.end_load_frame)
+			//{
+			//	res.push_back(Command(16, boat_id, -1));	//go指令
+			//	//离开泊位去虚拟点，需要改变泊位状态为未被占用
+			//	if (boat.pos != -1)
+			//	{
+			//		berths[boat.pos].is_occupied = 0;
+
+			//		//轮船离开要更新泊位货物数量
+			//		int temp_value = berths[boat.pos].cur_goods_num - berths[boat.pos].loading_speed * boat.loading_time;
+			//		berths[boat.pos].cur_goods_num = (temp_value > 0) ? temp_value : 0;
+			//	}
+			//	boat.is_loading = false;
+			//}
 		}
 	}
-	//boat的status从0变成1
-	if (1 == cur_status)
+	//boat的status从0变成1或者从2变成1
+	else if (1 == cur_status || 2 == cur_status)
 	{
 		//到虚拟点卸货完成，去泊位
 		if (-1 == boat.pos)
 		{
+			// 现逻辑：轮船去固定的泊位，默认0号
 			boat.cur_load = 0;
-			//找到泊位中货物数量最大的
-			int max_val = berths[0].cur_goods_num;
-			int max_val_id = 0;
-			for (int i = 1; i < berths.size(); ++i)
-			{
-				if (berths[i].cur_goods_num > max_val && berths[i].is_occupied == 0)
-				{
-					// 机器人放货物的时候要改变对应泊位的货物价值和货物量
-					max_val = berths[i].cur_goods_num;
-					max_val_id = i;
-				}
-			}
-			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+			res.push_back(Command(8, boat_id, boat.berth_id));
+			berths[boat.berth_id].is_occupied = 1;
 
-			//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
-			berths[max_val_id].is_occupied = 1;
-
-			//动态改变当前轮船的装货时间，根据要去的泊位货物数量和轮船容量、装载速度判断
-			if (berths[max_val_id].cur_goods_num >= boat.capacity)
-			{
-				boat.loading_time = boat.capacity / berths[max_val_id].loading_speed;
-			}
-			else if (berths[max_val_id].cur_goods_num < boat.capacity)
-			{
-				boat.loading_time = berths[max_val_id].cur_goods_num / berths[max_val_id].loading_speed;
-			}
+			//原逻辑：轮船选泊位
+			// boat.cur_load = 0;
+			////找到泊位中货物数量最大的
+			//int max_val = berths[0].cur_goods_num;
+			//int max_val_id = 0;
+			//for (int i = 1; i < berths.size(); ++i)
+			//{
+			//	// 在已经分配好的泊位中挑货物最多的
+			//	if (berths[i].is_occupied == 0 && berths[i].rbt_seq.size() > 0 && berths[i].cur_goods_num >= max_val)
+			//	{
+			//		// 机器人放货物的时候要改变对应泊位的货物价值和货物量
+			//		max_val = berths[i].cur_goods_num;
+			//		max_val_id = i;
+			//	}
+			//}
+			//res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+			////正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
+			//berths[max_val_id].is_occupied = 1;
+			////动态改变当前轮船的装货时间，根据要去的泊位货物数量和轮船容量、装载速度判断
+			//if (berths[max_val_id].cur_goods_num >= boat.capacity)
+			//{
+			//	boat.loading_time = boat.capacity / berths[max_val_id].loading_speed;
+			//}
+			//else if (berths[max_val_id].cur_goods_num < boat.capacity)
+			//{
+			//	boat.loading_time = berths[max_val_id].cur_goods_num / berths[max_val_id].loading_speed;
+			//}
 
 		}
 		//到泊位装货
@@ -543,44 +591,48 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 		if (boat.pos != -1)
 		{
 			//去虚拟点
-			res.push_back(Command(16, boat_id, -1));	//go指令
+			//res.push_back(Command(16, boat_id, -1));	//go指令
 			//离开泊位去虚拟点，需要改变泊位状态为未被占用
 			if (boat.pos != -1)
 			{
 				berths[boat.pos].is_occupied = 0;
 
-				//轮船离开要更新泊位货物数量
-				int temp_value = berths[boat.pos].cur_goods_num - berths[boat.pos].loading_speed * boat.loading_time;
-				berths[boat.pos].cur_goods_num = (temp_value > 0) ? temp_value : 0;
+				////轮船离开要更新泊位货物数量
+				// todo逻辑有问题
+				//int temp_value = berths[boat.pos].cur_goods_num - berths[boat.pos].loading_speed * boat.loading_time;
+				//berths[boat.pos].cur_goods_num = (temp_value > 0) ? temp_value : 0;
 			}
 		}
 		else
 		{
-			//找到泊位中货物数量最大的
-			int max_val = berths[0].cur_goods_num;
-			int max_val_id = 0;
-			for (int i = 1; i < berths.size(); ++i)
-			{
-				if (berths[i].cur_goods_num > max_val && berths[i].is_occupied == 0)
-				{
-					// 机器人放货物的时候要改变对应泊位的货物价值和货物量
-					max_val = berths[i].cur_goods_num;
-					max_val_id = i;
-				}
-			}
-			res.push_back(Command(8, boat_id, max_val_id));	//ship指令
-			//正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
-			berths[boat_id].is_occupied = 1;
+			// 如果在虚拟点发生从1到0，则说明轮船已经在去泊位的路上了，空指令
+			res.push_back(Command(-1, boat_id, -1));	//空指令
 
-			//动态改变当前轮船的装货时间，根据要去的泊位货物数量和轮船容量、装载速度判断
-			if (berths[max_val_id].cur_goods_num >= boat.capacity)
-			{
-				boat.loading_time = boat.capacity / berths[max_val_id].loading_speed;
-			}
-			else if (berths[max_val_id].cur_goods_num < boat.capacity)
-			{
-				boat.loading_time = berths[max_val_id].cur_goods_num / berths[max_val_id].loading_speed;
-			}
+			////找到泊位中货物数量最大的
+			//int max_val = berths[0].cur_goods_num;
+			//int max_val_id = 0;
+			//for (int i = 1; i < berths.size(); ++i)
+			//{
+			//	if (berths[i].cur_goods_num > max_val && berths[i].is_occupied == 0)
+			//	{
+			//		// 机器人放货物的时候要改变对应泊位的货物价值和货物量
+			//		max_val = berths[i].cur_goods_num;
+			//		max_val_id = i;
+			//	}
+			//}
+			//res.push_back(Command(8, boat_id, max_val_id));	//ship指令
+			////正在去这个泊位，此时要把泊位的状态改为被占用，以免其他轮船重复到达
+			//berths[boat_id].is_occupied = 1;
+
+			////动态改变当前轮船的装货时间，根据要去的泊位货物数量和轮船容量、装载速度判断
+			//if (berths[max_val_id].cur_goods_num >= boat.capacity)
+			//{
+			//	boat.loading_time = boat.capacity / berths[max_val_id].loading_speed;
+			//}
+			//else if (berths[max_val_id].cur_goods_num < boat.capacity)
+			//{
+			//	boat.loading_time = berths[max_val_id].cur_goods_num / berths[max_val_id].loading_speed;
+			//}
 
 		}
 	}
@@ -588,7 +640,9 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	else
 	{
 		boat.is_loading = false;
-		res.push_back(Command(16, boat_id, -1));	//go指令
+		// 生成空指令
+		res.push_back(Command(-1, boat_id, -1));	//空指令
+		//res.push_back(Command(16, boat_id, -1));	//go指令
 	}
 	return res;
 }
@@ -804,22 +858,22 @@ void MakeDecision::boatInputCheck(vector<Boat>& boats, int frame_id)
 	for (int i = 0; i < boats.size(); ++i)
 	{
 		// 如果当前帧大于等于结束装货的帧，就修改is_loading，表示装货完成
-		if (frame_id >= boats[i].end_load_frame)
+		/*if (frame_id >= boats[i].end_load_frame)
 		{
 			boats[i].is_loading = false;
-		}
+		}*/
 		// 到虚拟点后要把物品清空
-		if (boats[i].pos == -1)
-		{
-			boats[i].cur_load = 0;
-		}
-		// 得到轮船当前的状态
-		int boat_status = this->boatStatusCheck(boats[i]);
-		if (boat_status == 1 || boat_status == 2)
-		{
-			boats[i].start_load_frame = frame_id;
-			boats[i].end_load_frame = frame_id + boats[i].loading_time;
-		}
+		//if (boats[i].pos == -1)
+		//{
+		//	boats[i].cur_load = 0;
+		//}
+		//// 得到轮船当前的状态
+		//int boat_status = this->boatStatusCheck(boats[i]);
+		//if (boat_status == 1 || boat_status == 2)
+		//{
+		//	boats[i].start_load_frame = frame_id;
+		//	boats[i].end_load_frame = frame_id + boats[i].loading_time;
+		//}
 
 	}
 }
@@ -860,7 +914,7 @@ void MakeDecision::robotReboot(Robot& robot)
 	else if (robot.is_carry == 1)	// 如果机器人携带物品
 	{
 		robot.last_is_carry = 0;
-		robot.berth_id = 0;
+		//robot.berth_id = -1;
 	}
 }
 
@@ -937,6 +991,13 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 			// 如果is_carry从1变成0，表示在泊位放下了货物，要更改对应泊位的信息
 			if (0 == robots[rbt_idx].is_carry)
 			{
+				// 如果机器人未分配，其berth_id为-1，可能有越界问题
+				// 如果berth_id为-1，表示是个死机器人，就输出一个空指令
+				if (robots[rbt_idx].berth_id == -1)
+				{
+					robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+					continue;
+				}
 				berths[robots[rbt_idx].berth_id].cur_goods_num++;
 				berths[robots[rbt_idx].berth_id].cur_goods_val += robots[rbt_idx].robot_val;
 			}
@@ -1046,5 +1107,102 @@ void MakeDecision::boatsOperate(vector<Boat>& boats, vector<vector<Command>>& bo
 Command MakeDecision::lastDance(int boat_id)
 {
 	return Command(16, boat_id, -1);	//go指令
+}
+
+/**
+ * @brief 选取可用的泊位，划分区域，该函数结束后，所有活机器人都已分配泊位，死机器人berth_id为-1
+ * @param berths 
+ * @param robots 
+*/
+void MakeDecision::chooseBerths(vector<Berth>& berths, vector<Robot>& robots, int frame_id)
+{
+	if (frame_id > 1)
+	{
+		return;
+	}
+
+	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
+
+	for (auto& bot : robots)
+	{
+		for (auto& bth : berths)
+		{
+			//如果当前泊位分配的机器人小于2个，则可正常分配
+			//调参todo 参数设为1则表示平均分给10个泊位，2则表示平均分给5个泊位
+			if (bth.rbt_seq.size() < 1)
+			{
+				int target_x = bth.x + rand() % 4;
+				int target_y = bth.y + rand() % 4;
+				Point s = Point(bot.x, bot.y);
+				Point e = Point(target_x, target_y);
+				// 进行一次路径规划
+				bot.send_good_path = planpath.pathplanning(s, e);
+				// 如果规划的路径不可达，设置当前泊位为该机器人不可达的泊位，表示分配失败，尝试下一个泊位
+				if (bot.send_good_path.empty())
+				{
+					bot.is_ungettable[bth.id] = 0;
+					continue;
+				}
+				// 如果规划的路径可达，就把当前机器人加入当前泊位的rbt_seq，表示机器人与泊位绑定，设置机器人的berth_id为当前泊位id
+				else
+				{
+					bth.rbt_seq.push_back(bot.id);
+					bot.berth_id = bth.id;
+					break;
+				}
+			}
+			//如果当前泊位分配的机器人大于等于2个，则暂时不分配
+			else
+			{
+				continue;
+			}
+		}
+	}
+	// 分配完后检查机器人是否都被分配
+	for (auto& bot : robots)
+	{
+		// 如果已经被分配，则无需再分配
+		if (bot.berth_id != -1)
+		{
+			continue;
+		}
+		// 如果未被分配，则需要再分配
+		else
+		{
+			// 遍历一遍泊位，有可达的就加进去
+			for (auto& bth : berths)
+			{
+				if (bot.is_ungettable[bth.id] == 0)
+				{
+					continue;
+				}
+				int target_x = bth.x + rand() % 4;
+				int target_y = bth.y + rand() % 4;
+				Point s = Point(bot.x, bot.y);
+				Point e = Point(target_x, target_y);
+				bot.send_good_path = planpath.pathplanning(s, e);
+				// 如果不可达
+				if (bot.send_good_path.empty())
+				{
+					bot.is_ungettable[bth.id] = 0;
+					continue;
+				}
+				// 如果可达
+				// todo均匀分配
+				else
+				{
+					bth.rbt_seq.push_back(bot.id);
+					bot.berth_id = bth.id;
+					break;
+				}
+			}
+			// 如果遍历完所有泊位，机器人还未被分配，那么它就是一个死机器人
+			// todo死机器人在生成指令时处理
+			if (bot.berth_id == -1)
+			{
+				continue;
+			}
+		}
+	}
 }
 

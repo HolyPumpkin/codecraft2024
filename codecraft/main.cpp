@@ -58,6 +58,10 @@ int main()
 		// 读取每一帧信息
 		iop.InputFrameData(frame_id, money, goods, robots, boats);
 		
+		/* 只在第一帧进行泊位选择 */
+		mkd.chooseBerths(berths, robots, frame_id);
+		/* 只在第一帧进行泊位选择 */
+
 		// 每一帧开始判断有无应该消失的货物
 		mkd.vanishGoods(goods, frame_id);
 
