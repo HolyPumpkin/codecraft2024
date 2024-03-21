@@ -57,6 +57,11 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 	// 遍历所有货物，取曼哈顿距离最小的
 	for (auto& gd : goods)
 	{
+		// true表示可达，false表示不可达，如果当前货物不可达，就不去
+		if (!bot.reachable_map[gd.x][gd.y])
+		{
+			continue;
+		}
 		if (gd.is_assigned)
 		{
 			continue;
@@ -1203,5 +1208,54 @@ void MakeDecision::chooseBerths(vector<Berth>& berths, vector<Robot>& robots, in
 			}
 		}
 	}
+}
+
+/**
+ * @brief 计算每个机器人可达的区域并存在机器人结构体中
+ * @param robots 
+*/
+void MakeDecision::calRobotReachableMap(vector<Robot>& robots, int frame_id)
+{
+	if (frame_id > 1)
+	{
+		return;
+	}
+	int dir[4][2] = { {1,0},{0,1},{-1,0},{0,-1} };
+	// 每个机器人计算
+	for (auto& bot : robots)
+	{
+		// 先把可达数组初始化
+		for (int i = 0; i < 200; ++i)
+		{
+			vector<bool> temp(200, false);
+			bot.reachable_map.push_back(temp);
+		}
+		// 广度优先搜索
+		vector<vector<bool>> visited(200, vector<bool>(200, false));
+		queue<pair<int,int>> q;
+		q.push({ bot.x,bot.y });
+		while (!q.empty())
+		{
+			pair<int, int> cur = q.front();
+			q.pop();
+			int x = cur.first;
+			int y = cur.second;
+			bot.reachable_map[x][y] = true;
+			visited[x][y] = true;
+			for (int i = 0; i < 4; ++i)
+			{
+				int nx = x + dir[i][0];
+				int ny = y + dir[i][1];
+				if (nx < 0 || nx >= 200 || ny < 0 || ny >= 200 || visited[nx][ny] || this->maze[nx][ny] == '*' || this->maze[nx][ny] == '#')
+				{
+					continue;
+				}
+				q.push({ nx,ny });
+				visited[nx][ny] = true;
+			}
+			
+		}
+	}
+
 }
 

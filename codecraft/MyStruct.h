@@ -7,6 +7,8 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <queue>
+
 using namespace std;
 
 const int testMapSize = 210;
@@ -242,6 +244,9 @@ struct Robot
 
 	// 是否不可达某个泊位，1表示可达，0表示不可达
 	vector<int> is_ungettable;
+
+	// 当前机器人的可达地图，其中true表示可达，false表示不可达
+	vector<vector<bool>> reachable_map;
 
 	Robot() 
 	{
