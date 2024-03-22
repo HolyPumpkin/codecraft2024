@@ -23,12 +23,9 @@ public:
 	/* 对外部暴露的接口，路径规划主体 */
 	vector<pair<int, int>> pathplanning(Point& start, Point& end);
 
-	
-
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
 	vector<vector<char>> maze;	//二维字符地图
-	
 };
 

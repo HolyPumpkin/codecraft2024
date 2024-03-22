@@ -39,6 +39,26 @@ struct Point
 	};
 };
 
+// 以某个泊位为起点广搜得到的点
+struct BerthPoint
+{
+	int dir;	//该点走向对应泊位的路径方向，0表示右移一格，1表示左移一格，2表示上移一格，3表示下移一格，-1表示不可达
+
+	int dist;	//该点到对应泊位的距离，-1表示不可达
+
+	BerthPoint(int _dir, int _dist)
+	{
+		this->dir = _dir;
+		this->dist = _dist;
+	}
+
+	BerthPoint()
+	{
+		this->dir = -1;
+		this->dist = -1;
+	}
+};
+
 struct CollisionPoint
 {
 	// 冲突点坐标
@@ -164,13 +184,17 @@ struct Berth
 	// 用来存储锁定当前泊口的机器人
 	vector<int> rbt_seq;
 
+	// 用来存储可达地图及其属性
+	// reachable_map[x][y]表示的就是该点对于当前泊位而言的可达状态，如果可达，则其dir为走到泊位的方向，dist为距离
+	vector<vector<BerthPoint>> reachable_map;
+
 	Berth() 
 	{
 		this->id = 0;
 		this->x = 0;
 		this->y = 0;
 		this->r_size = 4;
-		this->r_size = 4;
+		this->c_size = 4;
 		this->rdx = 0;
 		this->rdy = 0;
 		this->transport_time = 0;
@@ -213,7 +237,9 @@ struct Robot
 	int last_is_carry;
 
 	// 是否被指派
-	// 0：未指派；1：被指派
+	// 0：因为正常取物送物未指派；
+	// 1：被指派；
+	// 2：因为碰撞而未指派
 	int is_assigned;
 
 	// 正在去拿的货物的消失时间
@@ -333,4 +359,6 @@ struct Good
 			this->is_ungettable[i] = false;
 		}
 	};
+
 };
+

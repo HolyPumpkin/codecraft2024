@@ -46,7 +46,7 @@ int main()
 	MakeDecision mkd(ch_map, N, n);
 	
 	DetectCollision dtc;
-	
+	std::ofstream outputFile("test.txt");	//测试
 	for (int zhen = 0; zhen < 15000; ++zhen)
 	{
 		// 轮船状态迁移，保证当前帧和前一帧的状态准确
@@ -61,7 +61,9 @@ int main()
 		/* 只在第一帧进行的初始化操作 */
 		mkd.chooseBerths(berths, robots, frame_id);	//泊位选择
 
-		mkd.calRobotReachableMap(robots, frame_id);	//机器人可达区域选择
+		mkd.calRobotReachableMap(robots, frame_id);	//机器人可达区域计算
+
+		mkd.calBerthReachableMap(berths, frame_id);	//泊位可达区域计算
 		/* 只在第一帧进行的初始化操作 */
 
 		// 每一帧开始判断有无应该消失的货物
@@ -87,6 +89,9 @@ int main()
 
 		//输出指令
 		iop.OutputCommand(modify_robot_cmd, boat_cmd);
+		outputFile << "frame:" << zhen << ", A* times:" << mkd.count << std::endl;
+		
 	}
+	outputFile.close();
 	return 0;
 }

@@ -26,6 +26,7 @@ MakeDecision::MakeDecision(vector<vector<char>>& _maze, int _N, int _n)
 	this->maze = _maze;
 	this->N = _N;
 	this->n = _n;
+	this->count = 0;
 }
 
 /**
@@ -41,20 +42,35 @@ MakeDecision::MakeDecision(vector<vector<char>>& _maze, int _N, int _n)
    * 注意事项/约束条件：
    * 指派失败的情况可能有多种，后续完善
    */
-int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, int cur_frame_id)
+int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, int cur_frame_id, vector<Berth> berths)
 {
 	//无货物
 	if (goods.empty())
 	{
 		return -1;
 	}
-
+	//死机器人
+	if (bot.berth_id == -1)
+	{
+		return -1;
+	}
 	// 取第一个货物作为基准
 	Good* min_dist_gd;
 	min_dist_gd = &goods.front();
-	int min_dist = abs(min_dist_gd->x - bot.x) + abs(min_dist_gd->y - bot.y);
 
-	// 遍历所有货物，取曼哈顿距离最小的
+	//原逻辑
+	//int min_dist = abs(min_dist_gd->x - bot.x) + abs(min_dist_gd->y - bot.y);
+	// 
+	//现逻辑，取离机器人绑定的泊位最近的
+	int min_dist = berths[bot.berth_id].reachable_map[min_dist_gd->x][min_dist_gd->y].dist;
+
+	//定义货物的运价系数，表示对一个货物的整体价值评估，考虑了实际距离和实际价值双重因素
+	//float w_gd = 0.0;	//货物权重
+	//float w_dist = 1.0;	//距离权重
+	//float a_dist = -0.005;	//距离的映射参数，将距离从负相关变为正相关
+	//float max_dist_val = w_gd * min_dist_gd->val / 200 + w_dist * exp(a_dist * min_dist);	//运价系数公式
+
+	// 遍历所有货物，先找距离泊位最近的
 	for (auto& gd : goods)
 	{
 		// true表示可达，false表示不可达，如果当前货物不可达，就不去
@@ -70,11 +86,29 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 		{
 			continue;
 		}
-		int dist = abs(gd.x - bot.x) + abs(gd.y - bot.y);
+		//原逻辑，取离机器人最近的
+		//int dist = abs(gd.x - bot.x) + abs(gd.y - bot.y);
+		
+		//现逻辑，取离机器人绑定的泊位最近的
+		int dist = berths[bot.berth_id].reachable_map[gd.x][gd.y].dist;
+
+		//如果货物在到达之前会消失，就不去取
 		if (dist >= (gd.end_frame - cur_frame_id))
 		{
 			continue;
 		}
+
+		//计算货物的运价系数，表示对一个货物的整体价值评估，考虑了实际距离和实际价值双重因素
+		//float dist_val = w_gd * gd.val / 200 + w_dist * exp(a_dist * dist);	//运价系数公式
+
+		////现逻辑，去取运价系数最高的
+		//if (max_dist_val < dist_val)
+		//{
+		//	min_dist_gd = &gd;
+		//	max_dist_val = dist_val;
+		//}
+
+		//原逻辑，取最近的
 		if (min_dist > dist)
 		{
 			min_dist_gd = &gd;
@@ -88,6 +122,51 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 			min_dist = dist;
 		}
 	}
+	//循环之后，min_dist_gd就是离当前泊位最近的货物
+	//定义一个区间上限
+	int max_dist = int(min_dist * 1.5);
+	// 遍历所有货物，在min_dist和max_dist的范围间寻找价值最大的
+	for (auto& gd : goods)
+	{
+		// true表示可达，false表示不可达，如果当前货物不可达，就不去
+		if (!bot.reachable_map[gd.x][gd.y])
+		{
+			continue;
+		}
+		if (gd.is_assigned)
+		{
+			continue;
+		}
+		if (gd.is_ungettable[robot_id])
+		{
+			continue;
+		}
+		//现逻辑，取离机器人绑定的泊位最近的
+		int dist = berths[bot.berth_id].reachable_map[gd.x][gd.y].dist;
+		//如果货物在到达之前会消失，就不去取
+		if (dist >= (gd.end_frame - cur_frame_id))
+		{
+			continue;
+		}
+		//如果货物距离大于最大区间值，则不取
+		if (dist > max_dist)
+		{
+			continue;
+		}
+		//寻找价值最大的
+		if (gd.val > min_dist_gd->val)
+		{
+			min_dist_gd = &gd;
+		}
+
+		//如果初始选的最小距离货物已经被指派，则切换
+		if (min_dist_gd->is_assigned)
+		{
+			min_dist_gd = &gd;
+			min_dist = dist;
+		}
+	}
+
 	//如果最后找到的已经被指派，则返回-1
 	if (min_dist_gd->is_assigned)
 	{
@@ -97,7 +176,7 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 	Point s = Point(bot.x, bot.y);
 	Point e = Point(min_dist_gd->x, min_dist_gd->y);
-
+	this->count++;
 	// 每次规划路径的时候都要把游标置零
 	bot.fetch_good_path = planpath.pathplanning(s, e);
 	bot.fetch_good_cur = 0;
@@ -169,7 +248,7 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
    * 注意事项/约束条件：
    * 指派失败的情况可能有多种，后续完善
    */
-int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
+int MakeDecision::assignRobotSend(Robot& bot, vector<Berth>& berths)
 {
 	// 如果机器人未分配，其berth_id为-1，可能有越界问题
 	// 如果berth_id为-1，表示是个死机器人，就输出一个空指令
@@ -182,15 +261,17 @@ int MakeDecision::assighRobotSend(Robot& bot, vector<Berth>& berths)
 	{
 		return -1;
 	}
-	// 直接规划去分配好的泊位
+	
 	int target_x = berths[bot.berth_id].x + rand() % 4;
 	int target_y = berths[bot.berth_id].y + rand() % 4;
 	PlanPath planpath(this->maze, this->N, this->n, this->own_robots);
 	Point s = Point(bot.x, bot.y);
 	Point e = Point(target_x, target_y);
+	this->count++;
 	// 每次规划路径的时候都要把游标置零
 	bot.send_good_path = planpath.pathplanning(s, e);
 	bot.send_good_cur = 0;
+
 	// 如果不可达
 	if (bot.send_good_path.empty())
 	{
@@ -407,14 +488,17 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 	{
 		//找到一个对应的泊位
 		int init_berth_id = -1;
+		int min_time = 20000;
 		for (int i = 0; i < berths.size(); ++i)
 		{
-			// 在已经分配好的泊位中挑货物最多的
+			// 在已经分配好的泊位中挑往返时间最短的
 			if (berths[i].is_occupied == 0 && berths[i].rbt_seq.size() > 0)
 			{
-				// 机器人放货物的时候要改变对应泊位的货物价值和货物量
-				init_berth_id = i;
-				break;
+				if (berths[i].transport_time < min_time)
+				{
+					init_berth_id = i;
+					min_time = berths[i].transport_time;
+				}
 			}
 		}
 		if (init_berth_id == -1)
@@ -484,18 +568,43 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 				berths[boat.pos].cur_goods_num -= temp_sum;
 			}
 			// 如果当前泊位装完了，但是轮船没满
-			else if (berths[boat.pos].cur_goods_num <= 0 && boat.cur_load < boat.capacity - loss)
+			else if (berths[boat.pos].cur_goods_num <= 0)
 			{
-				for (auto& berth : berths)
+				if(boat.cur_load < boat.capacity - loss)
 				{
-					if (berth.is_occupied == 0 && berth.cur_goods_num > loss)
+					int fast_bth_id = -1;
+					int min_time = 20000;
+					for (auto& berth : berths)
 					{
-						berth.is_occupied = 1;
+						if (berth.is_occupied == 0 && berth.cur_goods_num > loss)
+						{
+							if (berth.transport_time < min_time)
+							{
+								fast_bth_id = berth.id;
+								min_time = berth.transport_time;
+							}
+						}
+					}
+					if (fast_bth_id != -1)
+					{
+						berths[fast_bth_id].is_occupied = 1;
 						berths[boat.pos].is_occupied = 0;
 						boat.is_loading = false;
-						res.push_back(Command(8, boat_id, berth.id));
+						res.push_back(Command(8, boat_id, fast_bth_id));
 						return res;
 					}
+				}
+				//如果轮船近乎于满，就让它去送货
+				else if (boat.cur_load >= boat.capacity - loss)
+				{
+					res.push_back(Command(16, boat_id, -1));	//go指令
+					//离开泊位去虚拟点，需要改变泊位状态为未被占用
+					if (boat.pos != -1)
+					{
+						berths[boat.pos].is_occupied = 0;
+					}
+					boat.is_loading = false;
+					boat.loading_time = 0;
 				}
 			}
 
@@ -546,10 +655,37 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 		//到虚拟点卸货完成，去泊位
 		if (-1 == boat.pos)
 		{
-			// 现逻辑：轮船去固定的泊位，默认0号
+			//选一个最优的泊位去
 			boat.cur_load = 0;
-			res.push_back(Command(8, boat_id, boat.berth_id));
-			berths[boat.berth_id].is_occupied = 1;
+			int fast_bth_id = -1;
+			int min_time = 20000;
+			for (auto& berth : berths)
+			{
+				if (berth.is_occupied == 0)
+				{
+					if (berth.transport_time < min_time)
+					{
+						fast_bth_id = berth.id;
+						min_time = berth.transport_time;
+					}
+				}
+			}
+			if (fast_bth_id != -1)
+			{
+				berths[fast_bth_id].is_occupied = 1;
+				res.push_back(Command(8, boat_id, fast_bth_id));
+			}
+			//如果没找到，就去本来对应的泊位
+			else
+			{
+				res.push_back(Command(8, boat_id, boat.berth_id));
+				berths[boat.berth_id].is_occupied = 1;
+			}
+
+			//// 2024.3.22晚22：53之前的逻辑：轮船去固定的泊位，默认0号
+			//boat.cur_load = 0;
+			//res.push_back(Command(8, boat_id, boat.berth_id));
+			//berths[boat.berth_id].is_occupied = 1;
 
 			//原逻辑：轮船选泊位
 			// boat.cur_load = 0;
@@ -718,7 +854,7 @@ void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int
 					else
 					{
 						//修改指派变量，后续重新规划
-						robots[rbt_idx].is_assigned = 0;
+						robots[rbt_idx].is_assigned = 2;
 					}
 				}
 				//如果在路径中（不在起点或终点，防止下标越界）
@@ -739,7 +875,7 @@ void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int
 					else
 					{
 						//修改指派变量，后续重新规划
-						robots[rbt_idx].is_assigned = 0;
+						robots[rbt_idx].is_assigned = 2;
 					}
 				}
 
@@ -782,7 +918,7 @@ void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int
 					else
 					{
 						//修改指派变量，后续重新规划
-						robots[rbt_idx].is_assigned = 0;
+						robots[rbt_idx].is_assigned = 2;
 					}
 				}
 				//如果在路径中（不在起点或终点，防止下标越界）
@@ -803,7 +939,7 @@ void MakeDecision::robotInputCheck(vector<Robot>& robots, list<Good>& goods, int
 					else
 					{
 						//修改指派变量，后续重新规划
-						robots[rbt_idx].is_assigned = 0;
+						robots[rbt_idx].is_assigned = 2;
 					}
 				}
 
@@ -901,7 +1037,7 @@ void MakeDecision::boatStatusTrans(vector<Boat>& boats)
 void MakeDecision::robotReboot(Robot& robot)
 {
 	// 取消指派状态
-	robot.is_assigned = 0;
+	robot.is_assigned = 2;
 
 	// 清除路径信息
 	robot.fetch_good_cur = 0;
@@ -1005,7 +1141,7 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 				berths[robots[rbt_idx].berth_id].cur_goods_num++;
 				berths[robots[rbt_idx].berth_id].cur_goods_val += robots[rbt_idx].robot_val;
 			}
-
+			// 正常取货或者送货变为未指派状态
 			robots[rbt_idx].is_assigned = 0;
 			// 保证孪生变量与is_carry始终不同
 			robots[rbt_idx].last_is_carry = robots[rbt_idx].last_is_carry ^ 1;
@@ -1022,7 +1158,7 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 				{
 					robots[rbt_idx].is_assigned = 0;
 					// 先指派机器人去拿货物
-					int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id);
+					int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id,berths);
 
 					// 如果指派失败，插入空指令，表示不做任何操作
 					if (-1 == assign_success)
@@ -1042,7 +1178,7 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 			else if (0 == robots[rbt_idx].is_assigned)
 			{
 				// 先指派机器人去拿货物
-				int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id);
+				int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id, berths);
 
 				// 如果指派失败，插入空指令，表示不做任何操作
 				if (-1 == assign_success)
@@ -1056,6 +1192,29 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 				}
 				// 生成指令
 				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+			else if (2 == robots[rbt_idx].is_assigned)
+			{
+				// 先指派机器人去拿货物
+				int assign_success = this->assignRobotGet(robots[rbt_idx], rbt_idx, goods, frame_id, berths);
+
+				// 如果指派失败，插入空指令，表示不做任何操作
+				if (-1 == assign_success)
+				{
+					robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+					continue;
+				}
+				// 指派成功
+				else if (0 == assign_success) {
+					robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+				}
+				// 生成指令
+				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+			else
+			{
+				robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+				continue;
 			}
 		}
 		// 如果当前机器人携带东西
@@ -1067,11 +1226,12 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 				// 直接生成指令
 				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
 			}
-			// 如果当前机器人未被指派
+			// 如果当前机器人正常取货后变成未被指派
 			else if (0 == robots[rbt_idx].is_assigned)
 			{
 				// 先指派机器人去拿货物
-				int assign_success = this->assighRobotSend(robots[rbt_idx], berths);
+				// todo，调用makePathToBerth生成去泊位的路径
+				int assign_success = this->assignRobotSendBFS(robots[rbt_idx], berths);
 
 				// 如果指派失败，插入空指令，表示不做任何操作
 				if (-1 == assign_success)
@@ -1085,6 +1245,30 @@ void MakeDecision::robotsOperate(vector<Robot>& robots, int robot_num, vector<ve
 				}
 				// 生成指令
 				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+			// 如果当前机器人因为碰撞后变成未被指派
+			else if (2 == robots[rbt_idx].is_assigned)
+			{
+				// 先指派机器人去拿货物，调用A*算法，规避恢复状态的机器人
+				int assign_success = this->assignRobotSend(robots[rbt_idx], berths);
+
+				// 如果指派失败，插入空指令，表示不做任何操作
+				if (-1 == assign_success)
+				{
+					robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+					continue;
+				}
+				// 指派成功
+				else if (0 == assign_success) {
+					robots[rbt_idx].is_assigned = 1;	// 修改内部变量
+				}
+				// 生成指令
+				robot_cmd[rbt_idx] = this->makeRobotCmd(robots[rbt_idx], rbt_idx);
+			}
+			else
+			{
+				robot_cmd[rbt_idx] = this->makeNullCmd(rbt_idx);
+				continue;
 			}
 		}
 	}
@@ -1257,5 +1441,135 @@ void MakeDecision::calRobotReachableMap(vector<Robot>& robots, int frame_id)
 		}
 	}
 
+}
+
+/**
+ * @brief 计算每个泊位可达的区域及其信息并存在泊位结构体中
+ * @param berths 
+ * @param frame_id 
+*/
+void MakeDecision::calBerthReachableMap(vector<Berth>& berths, int frame_id)
+{
+	if (frame_id > 1)
+	{
+		return;
+	}
+	int dir[4][2] = { {0,1},{0,-1},{-1,0},{1,0} };
+	// 反方向映射，如果广搜时向左走，实际上去泊位的方向是向右走
+	map<pair<int, int>, int> anti_dir = {
+		{{0,1},1},
+		{{0,-1},0},
+		{{-1,0},3},
+		{{1,0},2}
+	};
+	// 对每个泊位
+	for (auto& bth : berths)
+	{
+		// 先初始化可达地图
+		for (int i = 0; i < 200; ++i)
+		{
+			vector<BerthPoint> temp(200);
+			bth.reachable_map.push_back(temp);
+		}
+
+		// 选择初始点
+		int sx = bth.x + 1;
+		int sy = bth.y + 1;
+
+		// 定义是否遍历的数组
+		vector<vector<bool>> visited(200, vector<bool>(200, false));
+
+		// 广度优先搜索
+		queue<pair<int, int>> q;
+		// 压入初始点
+		q.push({ sx,sy });
+		visited[sx][sy] = true;
+		bth.reachable_map[sx][sy].dir = -1;
+		bth.reachable_map[sx][sy].dist = 0;
+
+		while (!q.empty())
+		{
+			// 取出一个点
+			pair<int,int> cur = q.front();
+			q.pop();
+			int x = cur.first;
+			int y = cur.second;
+			for (int i = 0; i < 4; ++i)
+			{
+				int nx = x + dir[i][0];
+				int ny = y + dir[i][1];
+				if (nx < 0 || nx >= 200 || ny < 0 || ny >= 200 || visited[nx][ny] || this->maze[nx][ny] == '*' || this->maze[nx][ny] == '#')
+				{
+					continue;
+				}
+				q.push({ nx,ny });
+				bth.reachable_map[nx][ny].dir = anti_dir[{dir[i][0],dir[i][1]}];
+				bth.reachable_map[nx][ny].dist = bth.reachable_map[x][y].dist + 1;
+				visited[nx][ny] = true;
+			}
+		}
+	}
+
+}
+
+/**
+ * @brief 通过泊位的可达地图生成当前机器人去泊位的路径
+ * @param bot 
+ * @param bth 
+ * @return 
+*/
+vector<pair<int, int>> MakeDecision::makePathToBerth(Robot& bot, Berth& bth)
+{
+	vector<pair<int, int>> res;
+	int dir[4][2] = { {0,1},{0,-1},{-1,0},{1,0} };
+	// 取出起点
+	int x = bot.x;
+	int y = bot.y;
+	int success = 0;
+	// 直到走到泊位
+	for (int i = 0; i < 40000; ++i)
+	{
+		// 通用的操作，将当前点压入结果数组
+		res.push_back({ x,y });
+
+		// 如果走到了泊位区域
+		if (x >= bth.x && x <= bth.rdx
+		 && y >= bth.y && y <= bth.rdy)
+		{
+			success = 1;
+			break;
+		}
+		// 如果没走到泊位区域，则正常循环
+		// 计算下一个点
+		int cur_idx = bth.reachable_map[x][y].dir;
+		x += dir[cur_idx][0];
+		y += dir[cur_idx][1];
+	}
+	if (res.size() <= 1 || success == 0)
+	{
+		return vector<pair<int, int>>();
+	}
+	return res;
+}
+
+/**
+ * @brief 指派某个机器人去送货物，目前在正常取物后调用
+ * @param bot 
+ * @param berths 
+ * @return 
+*/
+int MakeDecision::assignRobotSendBFS(Robot& bot, vector<Berth>& berths)
+{
+	if (bot.berth_id <= -1)
+	{
+		return -1;
+	}
+	bot.send_good_path = this->makePathToBerth(bot, berths[bot.berth_id]);
+	bot.send_good_cur = 0;
+	if (bot.send_good_path.empty())
+	{
+		return -1;
+	}
+	return 0;
 }
 

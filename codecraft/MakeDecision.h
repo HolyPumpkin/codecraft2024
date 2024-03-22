@@ -19,10 +19,10 @@ public:
 	/* 决策函数 */
 
 	//指派某个机器人去拿货物
-	int assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, int cur_frame_id);
+	int assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, int cur_frame_id, vector<Berth> berths);
 
-	//指派某个机器人去送货物
-	int assighRobotSend(Robot& bot, vector<Berth>& berths);
+	//指派某个机器人去送货物，目前在碰撞后调用
+	int assignRobotSend(Robot& bot, vector<Berth>& berths);
 
 	//生成某个机器人该帧的指令
 	vector<Command> makeRobotCmd(Robot& bot, int bot_id);
@@ -72,10 +72,22 @@ public:
 	// 计算每个机器人的可达区域
 	void calRobotReachableMap(vector<Robot>& robots, int frame_id);
 
+	// 计算每个泊位的可达区域地图及其属性
+	void calBerthReachableMap(vector<Berth>& berths, int frame_id);
+
+	// 生成一条去某泊位的路径
+	vector<pair<int, int>> makePathToBerth(Robot& bot, Berth& bth);
+
+	//指派某个机器人去送货物，目前在正常取物后调用
+	int assignRobotSendBFS(Robot& bot, vector<Berth>& berths);
+
 private:
 	int N;	//构造地图大小
 	int n;	//实际地图大小
 	vector<vector<char>> maze;	//二维字符地图
 	vector<Robot> own_robots;	//机器人数组，需要保证每一帧这里的都是最新的
+
+public:
+	int count;
 };
 
