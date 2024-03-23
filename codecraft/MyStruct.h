@@ -219,6 +219,54 @@ struct Berth
 	}
 };
 
+struct Good
+{
+	// 坐标
+	int x, y;
+
+	// time_to_live,1000帧
+	int ttl;
+
+	// 货物起始帧
+	int start_frame;
+
+	// 货物终止帧，消失的时间点
+	int end_frame;
+
+	// 价值
+	int val;
+
+	//是否已被指派给某机器人
+	bool is_assigned;
+
+	//是否对某个机器人不可达
+	bool is_ungettable[10];
+
+	Good()
+	{
+		this->x = 0;
+		this->y = 0;
+		this->ttl = 1000;
+		this->val = 0;
+		this->is_assigned = false;
+		this->start_frame = 0;
+		this->end_frame = 0;
+		for (int i = 0; i < 10; ++i)
+		{
+			this->is_ungettable[i] = false;
+		}
+	}
+
+	// 构造函数（每个物品生命周期为1000帧）
+	Good(int _x, int _y, int _val, int frame_id) : x(_x), y(_y), val(_val), ttl(1000), start_frame(frame_id), end_frame(frame_id + 1000), is_assigned(false) {
+		for (int i = 0; i < 10; ++i)
+		{
+			this->is_ungettable[i] = false;
+		}
+	};
+
+};
+
 struct Robot
 {
 	// 机器人id
@@ -274,6 +322,9 @@ struct Robot
 	// 当前机器人的可达地图，其中true表示可达，false表示不可达
 	vector<vector<bool>> reachable_map;
 
+	// 指向机器人当前拿的货物
+	Good* good;
+
 	Robot() 
 	{
 		this->x = 0;
@@ -314,51 +365,5 @@ struct Robot
 	}
 };
 
-struct Good
-{
-	// 坐标
-	int x, y;
 
-	// time_to_live,1000帧
-	int ttl;
-
-	// 货物起始帧
-	int start_frame;
-
-	// 货物终止帧，消失的时间点
-	int end_frame;
-
-	// 价值
-	int val;
-
-	//是否已被指派给某机器人
-	bool is_assigned;
-
-	//是否对某个机器人不可达
-	bool is_ungettable[10];
-
-	Good() 
-	{
-		this->x = 0;
-		this->y = 0;
-		this->ttl = 1000;
-		this->val = 0;
-		this->is_assigned = false;
-		this->start_frame = 0;
-		this->end_frame = 0;
-		for (int i = 0; i < 10; ++i)
-		{
-			this->is_ungettable[i] = false;
-		}
-	}
-
-	// 构造函数（每个物品生命周期为1000帧）
-	Good(int _x, int _y, int _val, int frame_id) : x(_x), y(_y), val(_val), ttl(1000), start_frame(frame_id), end_frame(frame_id + 1000), is_assigned(false) {
-		for (int i = 0; i < 10; ++i)
-		{
-			this->is_ungettable[i] = false;
-		}
-	};
-
-};
 

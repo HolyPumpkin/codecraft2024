@@ -190,6 +190,7 @@ int MakeDecision::assignRobotGet(Robot& bot, int robot_id, list<Good>& goods, in
 
 	// 被指派成功要修改内部变量，记录该货物结束时间，机器人当前价值
 	min_dist_gd->is_assigned = true;
+	bot.good = min_dist_gd;	//把货物给机器人
 	bot.good_end_frame = min_dist_gd->end_frame;
 	bot.robot_val = min_dist_gd->val;
 
@@ -1047,6 +1048,7 @@ void MakeDecision::robotReboot(Robot& robot)
 
 	if (robot.is_carry == 0)		// 如果机器人未携带物品
 	{
+		robot.good->is_assigned = false;
 		robot.last_is_carry = 1;
 		robot.good_end_frame = -1;
 		robot.robot_val = 0;

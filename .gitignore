@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /codecraft/codecraft.zip
+/codecraft/codecraft-final.zip
