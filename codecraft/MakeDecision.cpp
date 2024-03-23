@@ -557,7 +557,7 @@ vector<Command> MakeDecision::makeBoatCmd(Boat& boat, int boat_id, vector<Berth>
 		{
 			// todo按轮船capacity的百分比或者机器人运力计算，泊位间移动是500帧，需要保证能多500帧的货物
 			// 调参
-			int loss = 10;	//500帧会损失的货物，需要大于这个才去
+			int loss = 13;	//500帧会损失的货物，需要大于这个才去
 			int temp_goods_num = berths[boat.pos].cur_goods_num;
 			int temp_loading_speed = berths[boat.pos].loading_speed;
 			// 如果当前泊位有货，则装货并维护信息

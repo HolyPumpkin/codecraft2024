@@ -46,7 +46,6 @@ int main()
 	MakeDecision mkd(ch_map, N, n);
 	
 	DetectCollision dtc;
-	std::ofstream outputFile("test.txt");	//测试
 	for (int zhen = 0; zhen < 15000; ++zhen)
 	{
 		// 轮船状态迁移，保证当前帧和前一帧的状态准确
@@ -89,9 +88,7 @@ int main()
 
 		//输出指令
 		iop.OutputCommand(modify_robot_cmd, boat_cmd);
-		outputFile << "frame:" << zhen << ", A* times:" << mkd.count << std::endl;
 		
 	}
-	outputFile.close();
 	return 0;
 }
